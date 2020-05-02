@@ -1,8 +1,9 @@
 package com.github.renuevo.web;
 
+import com.github.renuevo.service.PaymentService;
 import com.github.renuevo.web.dto.CardPayDto;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +18,11 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-@PreAuthorize("permitAll()")
+@RequiredArgsConstructor
+//@PreAuthorize("permitAll()")
 public class PaymentController {
+
+    private final PaymentService paymentService;
 
     /**
      * <pre>
@@ -30,7 +34,7 @@ public class PaymentController {
      *  @return : java.lang.String
      * </pre>
      */
-    @PostMapping("/payment")
+    @PostMapping("/payment/save")
     public String test(@ModelAttribute @Valid CardPayDto cardPayDto, Errors errors) {
         return null;
     }
@@ -45,9 +49,8 @@ public class PaymentController {
      *  @return : java.lang.String
      * </pre>
      */
-    @PostMapping("/cancel/{id}")
+    @PostMapping("/payment/cancel/{id}")
     public String cancel(@PathVariable String id) {
-
         return null;
     }
 

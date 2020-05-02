@@ -1,1 +1,13 @@
+spring:
+  r2dbc:
+    url: r2dbc:h2:mem:///pay_db
+  h2:
+    console:
+      enabled: true
 
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          r2dbc: DEBUG

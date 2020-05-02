@@ -43,8 +43,8 @@ public class CardPayDto {
     @Max(1000000000)
     Integer price;                      //결제금액
 
-    @Max(10000000)
     @Min(0)
+    @Max(10000000)
     Integer tax;                      //부가가치세
 
     public int getTax() {
