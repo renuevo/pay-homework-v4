@@ -14,12 +14,29 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * <pre>
+ * @className : CardInfoUtilsTest
+ * @author : Deokhwa.Kim
+ * @since : 2020-05-03
+ * </pre>
+ */
 @SpringBootTest
 class CardInfoUtilsTest {
 
     @Autowired
     private CardInfoUtils cardInfoUtils;
 
+    /**
+     * <pre>
+     *  @methodName : getCardEncryptTest
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-03 오후 3:02
+     *  @summary : 카드 암복호화 테스트
+     *  @param : []
+     *  @return : void
+     * </pre>
+     */
     @Test
     void getCardEncryptTest() {
 

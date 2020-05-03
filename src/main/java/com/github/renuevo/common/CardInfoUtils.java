@@ -33,7 +33,7 @@ public class CardInfoUtils {
      * </pre>
      */
     public String getCardEncrypt(PaymentDto paymentDto) {
-        return securityUtils.getEncode(paymentDto.getNumber() + "," + paymentDto.getValidityRangeStr() + "," + paymentDto.getCvc());
+        return securityUtils.getEncode(paymentDto.getCardNumber() + "," + paymentDto.getValidityRangeStr() + "," + paymentDto.getCvc());
     }
 
     /**
@@ -75,18 +75,19 @@ public class CardInfoUtils {
      * </pre>
      */
     public String getPaymentInfo(PaymentDto paymentDto, CardActionType cardActionType, long key) {
-        StringBuilder paymentInfo = new StringBuilder(Strings.padEnd(cardActionType.name(), 10, ' '));  //결제타입
-        paymentInfo.append(Strings.padStart(String.valueOf(key), 20, '0'));  //관리번호
-        paymentInfo.append(Strings.padEnd(String.valueOf(paymentDto.getNumber()), 20, ' '));  //카드번호
-        paymentInfo.append(Strings.padStart(String.valueOf(paymentDto.getInstallment()), 2, '0'));  //할부일수
-        paymentInfo.append(paymentDto.getValidityRangeStr());  //유효기간
-        paymentInfo.append(paymentDto.getCvc());  //cvc
-        paymentInfo.append(Strings.padStart(String.valueOf(paymentDto.getPrice()), 10, ' '));  //결제금액
-        paymentInfo.append(Strings.padStart(String.valueOf(paymentDto.getTax()), 10, '0'));  //부가가치세
-        paymentInfo.append(Strings.padStart("", 20, ' '));  //최소관리번호
-        paymentInfo.append(Strings.padEnd(getCardEncrypt(paymentDto), 300, ' '));  //카드 정보 암호화
-        paymentInfo.append(Strings.padEnd("", 47, ' '));  //예비구간
-        return securityUtils.getSaltKey();
+        StringBuilder paymentInfo = new StringBuilder(Strings.padEnd(cardActionType.name(), DataCommon.CARD_ACTION, ' '))  //결제타입
+                .append(Strings.padStart(String.valueOf(key), DataCommon.NUMBER, '0'))  //관리번호
+                .append(Strings.padEnd(String.valueOf(paymentDto.getCardNumber()), DataCommon.CARD_NUMBER, ' '))  //카드번호
+                .append(Strings.padStart(String.valueOf(paymentDto.getInstallment()), DataCommon.INSTALLMENT, '0'))  //할부일수
+                .append(paymentDto.getValidityRangeStr())  //유효기간
+                .append(paymentDto.getCvc())  //cvc
+                .append(Strings.padStart(String.valueOf(paymentDto.getPrice()), DataCommon.PRICE, ' '))  //결제금액
+                .append(Strings.padStart(String.valueOf(paymentDto.getTax()), DataCommon.TAX, '0'))  //부가가치세
+                .append(Strings.padStart("", DataCommon.CANCEL_NUMBER, ' '))  //취소관리번호
+                .append(Strings.padEnd(getCardEncrypt(paymentDto), DataCommon.CARD_ENCRYPT, ' '))  //카드 정보 암호화
+                .append(Strings.padEnd("", DataCommon.SPARE, ' '));  //예비구간
+        paymentInfo.insert(0, Strings.padStart(String.valueOf(paymentInfo.length()), DataCommon.DATA_LENGTH, ' '));   //데이터 길이 계산
+        return paymentInfo.toString();
     }
 
 }

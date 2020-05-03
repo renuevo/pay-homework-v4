@@ -1,6 +1,7 @@
 package com.github.renuevo.web;
 
 import com.github.renuevo.service.PaymentService;
+import com.github.renuevo.web.dto.PaymentCancelDto;
 import com.github.renuevo.web.dto.PaymentDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,10 +39,12 @@ public class PaymentController {
     @PostMapping("/payment/save")
     public Mono<ResponseEntity<?>> save(@ModelAttribute @Valid PaymentDto paymentDto, Errors errors) {
 
-        if(errors.hasErrors())
+        if (errors.hasErrors())
             return Mono.just(ResponseEntity.badRequest().body(errors.getAllErrors()));
 
-        return paymentService.paymentCall(paymentDto).map(ResponseEntity::ok);
+        return paymentService
+                .paymentCall(paymentDto)
+                .map(ResponseEntity::ok);
     }
 
     /**
@@ -54,9 +57,16 @@ public class PaymentController {
      *  @return : java.lang.String
      * </pre>
      */
-    @PostMapping("/payment/cancel/{id}")
-    public String cancel(@PathVariable String id) {
-        return null;
+    @PostMapping("/payment/cancel/{number}")
+    public Mono<ResponseEntity<?>> cancel(@PathVariable String number, @ModelAttribute @Valid PaymentCancelDto paymentCancelDto, Errors errors) {
+
+        if (errors.hasErrors())
+            return Mono.just(ResponseEntity.badRequest().body(errors.getAllErrors()));
+
+        paymentCancelDto.setNumber(number);
+        return paymentService
+                .paymentCancel(paymentCancelDto)
+                .map(ResponseEntity::ok);
     }
 
     /**
@@ -69,8 +79,8 @@ public class PaymentController {
      *  @return : java.lang.String
      * </pre>
      */
-    @GetMapping("/payment/{id}")
-    public String getPayment(@PathVariable String id) {
+    @GetMapping("/payment/{number}")
+    public String getPayment(@PathVariable String number) {
         return null;
     }
 

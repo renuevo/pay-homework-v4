@@ -26,7 +26,7 @@ public class PaymentDto {
     @NotNull
     @Min(1000000000L)
     @Max(9999999999999999L)
-    Long number;        //카드번호
+    Long cardNumber;        //카드번호
 
     @NotNull
     LocalDate validityRange;        //카드 유효기간
@@ -51,8 +51,8 @@ public class PaymentDto {
     Integer tax;                      //부가가치세
 
 
-    public PaymentDto(long number, int cvc, String validityRange) {
-        this.number = number;
+    public PaymentDto(long cardNumber, int cvc, String validityRange) {
+        this.cardNumber = cardNumber;
         this.cvc = cvc;
         setValidityRange(validityRange);
     }
