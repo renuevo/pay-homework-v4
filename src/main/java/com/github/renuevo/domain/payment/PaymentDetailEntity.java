@@ -9,6 +9,14 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
+/**
+ * <pre>
+ * @className : PaymentDetailEntity
+ * @author : Deokhwa.Kim
+ * @since : 2020-05-03
+ * @summary : 카드내역 Entity
+ * </pre>
+ */
 @Getter
 @NoArgsConstructor
 @Table("payment_detail")

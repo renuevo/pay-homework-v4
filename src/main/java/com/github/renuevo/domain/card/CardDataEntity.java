@@ -6,6 +6,14 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+/**
+ * <pre>
+ * @className : CardDataEntity
+ * @author : Deokhwa.Kim
+ * @since : 2020-05-03
+ * @summary : 카드사 통신 Entity
+ * </pre>
+ */
 @NoArgsConstructor
 @Table("card_data")
 public class CardDataEntity {

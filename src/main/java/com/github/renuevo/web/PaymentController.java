@@ -1,11 +1,13 @@
 package com.github.renuevo.web;
 
 import com.github.renuevo.service.PaymentService;
-import com.github.renuevo.web.dto.CardPayDto;
+import com.github.renuevo.web.dto.PaymentDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
 
@@ -19,7 +21,6 @@ import javax.validation.Valid;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-//@PreAuthorize("permitAll()")
 public class PaymentController {
 
     private final PaymentService paymentService;
@@ -35,8 +36,12 @@ public class PaymentController {
      * </pre>
      */
     @PostMapping("/payment/save")
-    public String test(@ModelAttribute @Valid CardPayDto cardPayDto, Errors errors) {
-        return null;
+    public Mono<ResponseEntity<?>> save(@ModelAttribute @Valid PaymentDto paymentDto, Errors errors) {
+
+        if(errors.hasErrors())
+            return Mono.just(ResponseEntity.badRequest().body(errors.getAllErrors()));
+
+        return paymentService.paymentCall(paymentDto).map(ResponseEntity::ok);
     }
 
     /**

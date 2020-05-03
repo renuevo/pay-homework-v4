@@ -25,7 +25,7 @@ public class SecurityUtils {
     public SecurityUtils(@Value("${security.password}") String password) {
         this.password = password;
         this.saltKey = KeyGenerators.string().generateKey();
-        this.textEncryptor = Encryptors.text(this.password, this.saltKey);
+        this.textEncryptor = Encryptors.text(this.password, this.saltKey);      //PBKDF2 해싱
     }
 
     public String getEncode(String text) {

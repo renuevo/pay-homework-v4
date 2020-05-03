@@ -1,21 +1,14 @@
 package com.github.renuevo.web.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -28,7 +21,7 @@ import java.util.Optional;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CardPayDto {
+public class PaymentDto {
 
     @NotNull
     @Min(1000000000L)
@@ -58,7 +51,7 @@ public class CardPayDto {
     Integer tax;                      //부가가치세
 
 
-    public CardPayDto(long number, int cvc, String validityRange) {
+    public PaymentDto(long number, int cvc, String validityRange) {
         this.number = number;
         this.cvc = cvc;
         setValidityRange(validityRange);
