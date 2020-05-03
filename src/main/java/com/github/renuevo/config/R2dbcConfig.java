@@ -1,7 +1,6 @@
 package com.github.renuevo.config;
 
 import io.r2dbc.h2.H2ConnectionFactory;
-import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,7 +11,6 @@ import org.springframework.data.r2dbc.connectionfactory.R2dbcTransactionManager;
 import org.springframework.data.r2dbc.connectionfactory.init.CompositeDatabasePopulator;
 import org.springframework.data.r2dbc.connectionfactory.init.ConnectionFactoryInitializer;
 import org.springframework.data.r2dbc.connectionfactory.init.ResourceDatabasePopulator;
-import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.transaction.ReactiveTransactionManager;
 
 /**
@@ -28,6 +26,16 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
     @Value("${spring.r2dbc.url}")
     String r2dbcUrl;
 
+    /**
+     * <pre>
+     *  @methodName : connectionFactory
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-02 오후 4:40
+     *  @summary : connection factory 설정
+     *  @param : []
+     *  @return : io.r2dbc.spi.ConnectionFactory
+     * </pre>
+     */
     @Bean
     @Override
     public ConnectionFactory connectionFactory() {
@@ -35,7 +43,16 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
         //return ConnectionFactories.get(r2dbcUrl);
     }
 
-
+    /**
+     * <pre>
+     *  @methodName : initializer
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-02 오후 4:41
+     *  @summary : 스키마 초기화
+     *  @param : [connectionFactory]
+     *  @return : org.springframework.data.r2dbc.connectionfactory.init.ConnectionFactoryInitializer
+     * </pre>
+     */
     @Bean
     public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory){
         ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
@@ -48,8 +65,18 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
         return initializer;
     }
 
+    /**
+     * <pre>
+     *  @methodName : transactionManager
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-02 오후 4:41
+     *  @summary : 트랜잭션 메니저 정의
+     *  @param : [connectionFactory]
+     *  @return : org.springframework.transaction.ReactiveTransactionManager
+     * </pre>
+     */
     @Bean
-    ReactiveTransactionManager transactionManager(ConnectionFactory connectionFactory) {
+    public ReactiveTransactionManager transactionManager(ConnectionFactory connectionFactory) {
         return new R2dbcTransactionManager(connectionFactory);
     }
 

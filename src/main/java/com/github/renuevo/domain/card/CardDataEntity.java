@@ -10,13 +10,13 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table("card_data")
 public class CardDataEntity {
     @Id
-    private Integer key;
+    private Long key;
 
     @Column("payment_info")
     private String paymentInfo;
 
     @Builder
-    public CardDataEntity(Integer key, String paymentInfo) {
+    public CardDataEntity(Long key, String paymentInfo) {
         this.key = key;
         this.paymentInfo = paymentInfo;
     }

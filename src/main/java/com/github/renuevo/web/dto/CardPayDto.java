@@ -1,12 +1,21 @@
 package com.github.renuevo.web.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -17,15 +26,16 @@ import java.util.Optional;
  * </pre>
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CardPayDto {
 
     @NotNull
     @Min(1000000000L)
-    @Max(999999999999L)
+    @Max(9999999999999999L)
     Long number;        //카드번호
 
     @NotNull
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MMyy")
     LocalDate validityRange;        //카드 유효기간
 
     @NotNull
@@ -47,9 +57,23 @@ public class CardPayDto {
     @Max(10000000)
     Integer tax;                      //부가가치세
 
+
+    public CardPayDto(long number, int cvc, String validityRange) {
+        this.number = number;
+        this.cvc = cvc;
+        setValidityRange(validityRange);
+    }
+
+    public void setValidityRange(String date) {
+        this.validityRange = LocalDate.of(LocalDate.now().getYear()  - (LocalDate.now().getYear() / 100) + Integer.parseInt(date.substring(2, 4)), Integer.parseInt(date.substring(0, 2)), 1);
+    }
+
+    public String getValidityRangeStr() {
+        return validityRange.format(DateTimeFormatter.ofPattern("MMyy"));
+    }
+
     public int getTax() {
-        if (Optional.ofNullable(tax).isEmpty()) tax = Math.round(price / 11f);   //부가 가치세 자동 계산
-        return tax;
+        return Optional.ofNullable(tax).orElse(Math.round(price / 11f)); //부가 가치세 자동 계산
     }
 
 }
