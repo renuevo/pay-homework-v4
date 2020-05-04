@@ -1,5 +1,6 @@
-package com.github.renuevo.common;
+package com.github.renuevo.domain;
 
+import com.github.renuevo.domain.PaymentComponent;
 import com.github.renuevo.web.dto.CardInfoDto;
 import com.github.renuevo.web.dto.PaymentDto;
 
@@ -22,10 +23,10 @@ import java.util.stream.Collectors;
  * </pre>
  */
 @SpringBootTest
-class CardInfoUtilsTest {
+class PaymentComponentTest {
 
     @Autowired
-    private CardInfoUtils cardInfoUtils;
+    private PaymentComponent paymentComponent;
 
     /**
      * <pre>
@@ -50,11 +51,11 @@ class CardInfoUtilsTest {
         );
 
         //when
-        List<String> cardEncrypList = paymentDtoList.stream().map(cardInfoUtils::getCardEncrypt).collect(Collectors.toList());
+        List<String> cardEncrypList = paymentDtoList.stream().map(paymentComponent::getCardEncrypt).collect(Collectors.toList());
         List<CardInfoDto> resultList = cardEncrypList.stream().map(data -> {
             CardInfoDto cardInfoDto = null;
             try {
-                cardInfoDto = cardInfoUtils.getCardDecrypt(data, cardInfoUtils.getSalt());
+                cardInfoDto = paymentComponent.getCardDecrypt(data, paymentComponent.getSalt());
             } catch (Exception e) {
                 log.error("getCardDecrypt Error {}", e.getMessage(), e);
             }

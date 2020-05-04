@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 public class PaymentResponseDto {
-    String number;      //관리번호
+    String identityNumber;      //관리번호
     int installment; //할부개월
     int price;       //결제금액
     int tax;         //부가가치세

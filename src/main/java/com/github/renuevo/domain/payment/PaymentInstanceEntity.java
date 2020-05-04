@@ -26,8 +26,15 @@ public class PaymentInstanceEntity {
     @Id
     private Long key;               //관리번호
     private Integer installment;    //할부기간
+    @Setter
     private Integer price;          //가격
+    @Setter
     private Integer tax;            //부가가치세
+    private String identityNumber;  //관리번호
+    private String cancelIdentityNumber;  //전체취소 관리 번호
+
+    @Setter
+    private Boolean cancel;         //최소 여부
 
     @Setter
     @Column("card_info")
@@ -41,13 +48,15 @@ public class PaymentInstanceEntity {
     private LocalDateTime updateDt; //수정일
 
     @Builder
-    public PaymentInstanceEntity(Long key, Integer installment, Integer price, Integer tax, String cardInfo, String salt) {
+    public PaymentInstanceEntity(Long key, Integer installment, Integer price, Integer tax, String cardInfo, String salt, String identityNumber, String cancelIdentityNumber) {
         this.key = key;
         this.installment = installment;
         this.price = price;
         this.tax = tax;
         this.cardInfo = cardInfo;
         this.salt = salt;
+        this.identityNumber = identityNumber;
+        this.cancelIdentityNumber = cancelIdentityNumber;
 
 
         this.createDt = LocalDateTime.now();

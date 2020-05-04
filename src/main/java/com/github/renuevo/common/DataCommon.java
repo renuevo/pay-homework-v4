@@ -5,7 +5,6 @@ public class DataCommon {
 
     public final static int DATA_LENGTH = 4;
     public final static int CARD_ACTION = 10;   //카드행동타입
-    public final static int NUMBER = 10;        //관리번호
     public final static int CARD_NUMBER = 20;   //카드번호
     public final static int INSTALLMENT = 2;   //할부일수
     public final static int VALIDITY_RANGE = 0;   //유효기간

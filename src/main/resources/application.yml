@@ -1,9 +1,11 @@
 spring:
   r2dbc:
-    url: r2dbc:h2:mem:///pay_db
+    url: r2dbc:pool:h2:mem:///pay_db?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MV_STORE=FALSE;user=sa;password=
   h2:
     console:
       enabled: true
+  main:
+    allow-bean-definition-overriding: true
 
 logging:
   level:
@@ -11,6 +13,7 @@ logging:
       springframework:
         data:
           r2dbc: DEBUG
+
 
 security:
   password: renuevo

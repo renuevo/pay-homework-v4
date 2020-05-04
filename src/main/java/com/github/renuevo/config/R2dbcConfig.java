@@ -1,6 +1,6 @@
 package com.github.renuevo.config;
 
-import io.r2dbc.h2.H2ConnectionFactory;
+import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -39,8 +39,8 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
     @Bean
     @Override
     public ConnectionFactory connectionFactory() {
-        return H2ConnectionFactory.inMemory("pay_db");
-        //return ConnectionFactories.get(r2dbcUrl);
+        return ConnectionFactories.get(r2dbcUrl);
+        //return H2ConnectionFactory.inMemory("pay_db");
     }
 
     /**
@@ -54,7 +54,7 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
      * </pre>
      */
     @Bean
-    public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory){
+    public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
         ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
         initializer.setConnectionFactory(connectionFactory);
 
@@ -64,6 +64,7 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
 
         return initializer;
     }
+
 
     /**
      * <pre>

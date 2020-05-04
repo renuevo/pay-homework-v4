@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
 
 /**
  * <pre>
@@ -57,13 +59,13 @@ public class PaymentController {
      *  @return : java.lang.String
      * </pre>
      */
-    @PostMapping("/payment/cancel/{number}")
-    public Mono<ResponseEntity<?>> cancel(@PathVariable String number, @ModelAttribute @Valid PaymentCancelDto paymentCancelDto, Errors errors) {
+    @PostMapping("/payment/cancel/{identityNumber}")
+    public Mono<ResponseEntity<?>> cancel(@PathVariable String identityNumber, @ModelAttribute @Valid PaymentCancelDto paymentCancelDto, Errors errors) {
 
         if (errors.hasErrors())
             return Mono.just(ResponseEntity.badRequest().body(errors.getAllErrors()));
 
-        paymentCancelDto.setNumber(number);
+        paymentCancelDto.setIdentityNumber(identityNumber);
         return paymentService
                 .paymentCancel(paymentCancelDto)
                 .map(ResponseEntity::ok);
@@ -79,8 +81,9 @@ public class PaymentController {
      *  @return : java.lang.String
      * </pre>
      */
-    @GetMapping("/payment/{number}")
-    public String getPayment(@PathVariable String number) {
+    @GetMapping("/payment/{identityNumber}")
+    public String getPayment(@PathVariable String identityNumber) {
+
         return null;
     }
 

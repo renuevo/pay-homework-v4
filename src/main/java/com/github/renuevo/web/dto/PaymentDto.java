@@ -1,6 +1,7 @@
 package com.github.renuevo.web.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -50,6 +51,15 @@ public class PaymentDto {
     @Max(10000000)
     Integer tax;                      //부가가치세
 
+    @Builder
+    public PaymentDto(Long cardNumber, LocalDate validityRange, int cvc, int installment, int price, int tax) {
+        this.cardNumber = cardNumber;
+        this.validityRange = validityRange;
+        this.cvc = cvc;
+        this.installment = installment;
+        this.price = price;
+        this.tax = tax;
+    }
 
     public PaymentDto(long cardNumber, int cvc, String validityRange) {
         this.cardNumber = cardNumber;
@@ -58,7 +68,7 @@ public class PaymentDto {
     }
 
     public void setValidityRange(String date) {
-        this.validityRange = LocalDate.of(LocalDate.now().getYear()  - (LocalDate.now().getYear() / 100) + Integer.parseInt(date.substring(2, 4)), Integer.parseInt(date.substring(0, 2)), 1);
+        this.validityRange = LocalDate.of(LocalDate.now().getYear() - (LocalDate.now().getYear() / 100) + Integer.parseInt(date.substring(2, 4)), Integer.parseInt(date.substring(0, 2)), 1);
     }
 
     public String getValidityRangeStr() {

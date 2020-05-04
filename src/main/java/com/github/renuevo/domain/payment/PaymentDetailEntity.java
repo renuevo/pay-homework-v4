@@ -25,8 +25,9 @@ public class PaymentDetailEntity {
     @Id
     private Long key;
 
-    @Column("payment_key")
-    private Long paymentKey;
+    @Column("identity_number")
+    private String identityNumber;
+
     @Column("payment_type")
     private String paymentType;
     private Integer installment;
@@ -37,9 +38,9 @@ public class PaymentDetailEntity {
     private LocalDateTime createDt; //생성일
 
     @Builder
-    public PaymentDetailEntity(Long key, Long paymentKey, String paymentType, Integer installment, Integer price, Integer tax) {
+    public PaymentDetailEntity(Long key, String identityNumber, String paymentType, Integer installment, Integer price, Integer tax) {
         this.key = key;
-        this.paymentKey = paymentKey;
+        this.identityNumber = identityNumber;
         this.paymentType = paymentType;
         this.installment = installment;
         this.price = price;

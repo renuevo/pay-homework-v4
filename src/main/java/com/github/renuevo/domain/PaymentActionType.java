@@ -1,4 +1,4 @@
-package com.github.renuevo.common;
+package com.github.renuevo.domain;
 
 /**
  * <pre>
@@ -8,7 +8,7 @@ package com.github.renuevo.common;
  * @summary : 카드 행동 타입
  * </pre>
  */
-public enum CardActionType {
+public enum PaymentActionType {
     PAYMENT, CANCEL, PARTCANCEL
 
 }

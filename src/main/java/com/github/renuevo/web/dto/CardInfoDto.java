@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class CardInfoDto {
 
-    Long number;        //카드번호
+    Long cardNumber;        //카드번호
     LocalDate validityRange;        //카드 유효기간
     Integer cvc;                        //cvc 번호
 

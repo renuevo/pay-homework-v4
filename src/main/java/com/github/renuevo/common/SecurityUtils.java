@@ -1,11 +1,14 @@
 package com.github.renuevo.common;
 
+import com.google.common.hash.Hashing;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * <pre>
@@ -38,6 +41,10 @@ public class SecurityUtils {
 
     public String getDecode(String text, String salt) {
         return Encryptors.text(this.password, salt).decrypt(text);
+    }
+
+    public String getIdentityHash(String text){
+        return Hashing.murmur3_32().hashString(text, StandardCharsets.UTF_8).toString();
     }
 
 }
