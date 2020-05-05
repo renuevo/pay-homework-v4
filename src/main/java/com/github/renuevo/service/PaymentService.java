@@ -1,5 +1,6 @@
 package com.github.renuevo.service;
 
+import com.github.renuevo.common.GlobalValidation;
 import com.github.renuevo.domain.PaymentActionType;
 import com.github.renuevo.domain.PaymentComponent;
 import com.github.renuevo.domain.card.CardCompanyEntity;
@@ -85,8 +86,8 @@ public class PaymentService {
                         cardInfoRepository.save(cardInfoEntity).subscribe();
                     });
         })
-                //에러 처리
-                .onErrorResume(e -> Mono.error(new PaymentException(e)));
+                .onErrorResume(e -> Mono.error(new PaymentException(e)))
+                .subscribeOn(Schedulers.elastic());
     }
 
     /**
@@ -103,23 +104,10 @@ public class PaymentService {
     public Mono<PaymentCancelResponseDto> paymentCancel(PaymentCancelDto paymentCancelDto) {
         return paymentInstanceRepository.findByIdentityNumber(paymentCancelDto.getIdentityNumber()) //관리번호 조회
                 .switchIfEmpty(Mono.error(new PaymentCancelException(ErrorResponse.FieldError.of("identityNumber", "", "존재하지 않는 관리번호입니다"))))
-
+                .filter(paymentInstanceEntity -> GlobalValidation.paymentCancelValidation(paymentInstanceEntity, paymentCancelDto))   //취소 validation check
 
                 //취소 진행
                 .zipWhen(paymentInstanceEntity -> {
-
-                    //결제 금액보다 취소금액이 많음
-                    if (paymentInstanceEntity.getPrice() < paymentCancelDto.getPrice())
-                        return Mono.error(new PaymentCancelException(ErrorResponse.FieldError.of("price", String.valueOf(paymentInstanceEntity.getPrice()), String.format("%s 은 %s보다 작아야 합니다", paymentInstanceEntity.getPrice(), paymentCancelDto.getPrice()))));
-
-                    //부가가치세가 취소금액보다 많음
-                    if (paymentInstanceEntity.getTax() < paymentCancelDto.getTax())
-                        return Mono.error(new PaymentCancelException(ErrorResponse.FieldError.of("tax", String.valueOf(paymentInstanceEntity.getTax()), String.format("%s 은 %s보다 작아야 합니다", paymentInstanceEntity.getTax(), paymentCancelDto.getTax()))));
-
-                    //전체 취소 여부 확인
-                    if (paymentInstanceEntity.getCancel())
-                        return Mono.error(new PaymentCancelException(ErrorResponse.FieldError.of("cancel", "", "이미 취소된 결제 입니다")));
-
 
                     //결제 취소 남은 금액 계산
                     paymentInstanceEntity.setPrice(paymentInstanceEntity.getPrice() - paymentCancelDto.getPrice());
@@ -172,9 +160,10 @@ public class PaymentService {
                     PaymentViewResponseDto paymentViewResponseDto = modelMapper.map(paymentViewEntity, PaymentViewResponseDto.class);
                     paymentViewResponseDto.setCardInfoDto(cardInfoDto);
                     return Mono.just(paymentViewResponseDto);
-                })
-                .onErrorResume(e -> Mono.error(new PaymentViewException(e)));
 
+                })
+                .onErrorResume(e -> Mono.error(new PaymentViewException(e)))
+                .subscribeOn(Schedulers.elastic());
     }
 
 

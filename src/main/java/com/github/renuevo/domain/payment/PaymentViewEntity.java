@@ -8,10 +8,17 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
+/**
+ * <pre>
+ * @className : PaymentViewEntity
+ * @author : Deokhwa.Kim
+ * @since : 2020-05-05
+ * </pre>
+ */
 @Getter
-@NoArgsConstructor
 @Table("payment_detail")
 public class PaymentViewEntity {
+
     @Id
     private Long key;
 

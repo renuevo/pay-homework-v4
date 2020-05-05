@@ -11,6 +11,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+/**
+ * <pre>
+ * @className : GlobalExceptionHandler
+ * @author : Deokhwa.Kim
+ * @since : 2020-05-05
+ * </pre>
+ */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
