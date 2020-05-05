@@ -2,17 +2,17 @@ package com.github.renuevo.web;
 
 import com.github.renuevo.service.PaymentService;
 import com.github.renuevo.web.dto.PaymentCancelDto;
+import com.github.renuevo.web.dto.PaymentCancelResponseDto;
 import com.github.renuevo.web.dto.PaymentDto;
+import com.github.renuevo.web.dto.PaymentResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 
 /**
  * <pre>
@@ -39,14 +39,8 @@ public class PaymentController {
      * </pre>
      */
     @PostMapping("/payment/save")
-    public Mono<ResponseEntity<?>> save(@ModelAttribute @Valid PaymentDto paymentDto, Errors errors) {
-
-        if (errors.hasErrors())
-            return Mono.just(ResponseEntity.badRequest().body(errors.getAllErrors()));
-
-        return paymentService
-                .paymentCall(paymentDto)
-                .map(ResponseEntity::ok);
+    public Mono<PaymentResponseDto> save(@ModelAttribute @Valid PaymentDto paymentDto) throws Exception {
+        return paymentService.paymentSave(paymentDto);
     }
 
     /**
@@ -60,15 +54,9 @@ public class PaymentController {
      * </pre>
      */
     @PostMapping("/payment/cancel/{identityNumber}")
-    public Mono<ResponseEntity<?>> cancel(@PathVariable String identityNumber, @ModelAttribute @Valid PaymentCancelDto paymentCancelDto, Errors errors) {
-
-        if (errors.hasErrors())
-            return Mono.just(ResponseEntity.badRequest().body(errors.getAllErrors()));
-
+    public Mono<PaymentCancelResponseDto> cancel(@PathVariable String identityNumber, @ModelAttribute @Valid PaymentCancelDto paymentCancelDto) {
         paymentCancelDto.setIdentityNumber(identityNumber);
-        return paymentService
-                .paymentCancel(paymentCancelDto)
-                .map(ResponseEntity::ok);
+        return paymentService.paymentCancel(paymentCancelDto);
     }
 
     /**
@@ -82,9 +70,9 @@ public class PaymentController {
      * </pre>
      */
     @GetMapping("/payment/{identityNumber}")
-    public String getPayment(@PathVariable String identityNumber) {
-
+    public Mono<ServerResponse> getPayment(@PathVariable String identityNumber) {
         return null;
     }
 
 }
+

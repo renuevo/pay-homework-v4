@@ -5,10 +5,10 @@ package com.github.renuevo.domain;
  * @className : CardActionType
  * @author : Deokhwa.Kim
  * @since : 2020-05-03
- * @summary : 카드 행동 타입
+ * @summary : 결제/취소 행동 타입
  * </pre>
  */
 public enum PaymentActionType {
-    PAYMENT, CANCEL, PARTCANCEL
+    PAYMENT, CANCEL
 
 }

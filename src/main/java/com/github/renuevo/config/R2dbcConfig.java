@@ -40,7 +40,6 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
     @Override
     public ConnectionFactory connectionFactory() {
         return ConnectionFactories.get(r2dbcUrl);
-        //return H2ConnectionFactory.inMemory("pay_db");
     }
 
     /**
@@ -64,7 +63,6 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
 
         return initializer;
     }
-
 
     /**
      * <pre>

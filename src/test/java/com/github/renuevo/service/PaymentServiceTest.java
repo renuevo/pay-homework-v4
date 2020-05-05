@@ -1,6 +1,5 @@
 package com.github.renuevo.service;
 
-import com.github.renuevo.web.dto.PaymentCancelDto;
 import com.github.renuevo.web.dto.PaymentDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +17,50 @@ class PaymentServiceTest {
 
     @Test
     void paymentCall() {
+        /*
+        Mono.zip(paymentService.paymentCall(PaymentDto.builder()
+                .cardNumber(1234567890123456)
+                .cvc(555)
+                .installment(0)
+                .validityRange(LocalDate.now())
+                .price(10000000)
+                .build())
+                .publishOn(Schedulers.elastic()),
+                paymentService.paymentCall(PaymentDto.builder()
+                        .cardNumber(1234567890123456L)
+                        .cvc(555)
+                        .installment(0)
+                        .validityRange(LocalDate.now())
+                        .price(10000000)
+                        .build())
+                        .publishOn(Schedulers.elastic()),
+                paymentService.paymentCall(PaymentDto.builder()
+                        .cardNumber(1234567890123456L)
+                        .cvc(555)
+                        .installment(0)
+                        .validityRange(LocalDate.now())
+                        .price(10000000)
+                        .build())
+                        .publishOn(Schedulers.elastic()),
+                paymentService.paymentCall(PaymentDto.builder()
+                        .cardNumber(1234567890123456L)
+                        .cvc(555)
+                        .installment(0)
+                        .validityRange(LocalDate.now())
+                        .price(10000000)
+                        .build())
+                        .publishOn(Schedulers.elastic()),
+                paymentService.paymentCall(PaymentDto.builder()
+                        .cardNumber(1234567890123456L)
+                        .cvc(555)
+                        .installment(0)
+                        .validityRange(LocalDate.now())
+                        .price(10000000)
+                        .build())
+                        .publishOn(Schedulers.elastic())
+                ).subscribe();
+
+        /*
         var mono = paymentService.paymentCall(PaymentDto.builder()
                 .cardNumber(1234567890123456L)
                 .cvc(555)
@@ -58,6 +101,9 @@ class PaymentServiceTest {
                 ))
                 .flatMap(tuple -> Mono.just(tuple.getT1()))
                 .block();
+
+
+         */
 
 
         System.out.println("test");

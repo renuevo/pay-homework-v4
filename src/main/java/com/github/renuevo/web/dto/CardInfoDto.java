@@ -2,17 +2,21 @@ package com.github.renuevo.web.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardInfoDto {
 
-    Long cardNumber;        //카드번호
-    LocalDate validityRange;        //카드 유효기간
-    Integer cvc;                        //cvc 번호
+    String cardNumber;                //카드번호
+    String validityRange;        //카드 유효기간
+    int cvc;                    //cvc 번호
 
 }

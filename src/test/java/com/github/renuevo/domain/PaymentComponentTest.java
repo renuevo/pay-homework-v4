@@ -41,26 +41,16 @@ class PaymentComponentTest {
     @Test
     void getCardEncryptTest() {
 
-        Logger log = LoggerFactory.getLogger(this.getClass());
-
         //given
         List<PaymentDto> paymentDtoList = List.of(
-                new PaymentDto(1234567890123456L, 777, "1125"),
-                new PaymentDto(9123421390123456L, 666, "0110"),
-                new PaymentDto(4355327890123456L, 555, "1201")
+                PaymentDto.builder().cardNumber("1234567890123456").cvc(777).validityRange("1125").build(),
+                PaymentDto.builder().cardNumber("9123421390123456").cvc(666).validityRange("0110").build(),
+                PaymentDto.builder().cardNumber("4355327890123456").cvc(555).validityRange("1201").build()
         );
 
         //when
         List<String> cardEncrypList = paymentDtoList.stream().map(paymentComponent::getCardEncrypt).collect(Collectors.toList());
-        List<CardInfoDto> resultList = cardEncrypList.stream().map(data -> {
-            CardInfoDto cardInfoDto = null;
-            try {
-                cardInfoDto = paymentComponent.getCardDecrypt(data, paymentComponent.getSalt());
-            } catch (Exception e) {
-                log.error("getCardDecrypt Error {}", e.getMessage(), e);
-            }
-            return cardInfoDto;
-        }).collect(Collectors.toList());
+        List<CardInfoDto> resultList = cardEncrypList.stream().map(data -> paymentComponent.getCardDecrypt(data, paymentComponent.getSalt())).collect(Collectors.toList());
 
         //then
         for (int i = 0; i < cardEncrypList.size(); i++) {

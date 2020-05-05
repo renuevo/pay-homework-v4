@@ -3,6 +3,7 @@ package com.github.renuevo.domain.payment;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
  */
 @Getter
 @NoArgsConstructor
+@ToString
 @Table("payment_detail")
 public class PaymentDetailEntity {
 
@@ -26,16 +28,20 @@ public class PaymentDetailEntity {
     private Long key;
 
     @Column("identity_number")
-    private String identityNumber;
+    private String identityNumber;  //관리번호
 
     @Column("payment_type")
-    private String paymentType;
-    private Integer installment;
-    private Integer price;
-    private Integer tax;
+    private String paymentType;     //결제/취소
+    private Integer installment;    //할부개월
+    private Integer price;          //금액
+    private Integer tax;            //부가가치세
 
     @Column("create_dt")
     private LocalDateTime createDt; //생성일
+
+    private Integer resultPrice;   //남은 금액
+    private Integer resultTax;     //남은 부가가치세
+    private Integer resultInstallment;  //할부 개월
 
     @Builder
     public PaymentDetailEntity(Long key, String identityNumber, String paymentType, Integer installment, Integer price, Integer tax) {

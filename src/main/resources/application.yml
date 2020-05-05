@@ -15,6 +15,7 @@ logging:
           r2dbc: DEBUG
 
 
+
 security:
   password: renuevo
 

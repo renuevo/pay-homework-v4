@@ -7,7 +7,10 @@ import com.github.renuevo.web.dto.PaymentCancelDto;
 import com.github.renuevo.web.dto.PaymentDto;
 import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.ui.ModelMap;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -25,6 +28,7 @@ import java.util.UUID;
 public class PaymentComponent {
 
     private final SecurityUtils securityUtils;
+    private final ModelMapper modelMapper;
 
     /**
      * <pre>
@@ -37,7 +41,7 @@ public class PaymentComponent {
      * </pre>
      */
     public String getCardEncrypt(PaymentDto paymentDto) {
-        return securityUtils.getEncode(paymentDto.getCardNumber() + "," + paymentDto.getValidityRangeStr() + "," + paymentDto.getCvc());
+        return securityUtils.getEncode(paymentDto.getCardNumber() + "," + paymentDto.getValidityRange() + "," + paymentDto.getCvc());
     }
 
     /**
@@ -50,18 +54,10 @@ public class PaymentComponent {
      *  @return : com.github.renuevo.web.dto.CardInfoDto
      * </pre>
      */
-    public CardInfoDto getCardDecrypt(String digest, String salt) throws Exception {
+    public CardInfoDto getCardDecrypt(String digest, String salt) {
         //복호화
         String[] cardInfoArray = securityUtils.getDecode(digest, salt).split(",");
-
-        if (cardInfoArray.length < 3)
-            throw new Exception();
-
-        Long number = Optional.of(cardInfoArray[0]).map(Long::parseLong).get();
-        LocalDate validityRange = Optional.of(cardInfoArray[1]).map(date -> LocalDate.of(LocalDate.now().getYear() - (LocalDate.now().getYear() / 100) + Integer.parseInt(date.substring(2, 4)), Integer.parseInt(date.substring(0, 2)), 1)).get();
-        Integer cvc = Optional.of(cardInfoArray[2]).map(Integer::parseInt).get();
-
-        return new CardInfoDto(number, validityRange, cvc);
+        return new CardInfoDto(cardInfoArray[0], cardInfoArray[1], Integer.parseInt(cardInfoArray[2]));
     }
 
     public String getSalt() {
@@ -83,7 +79,7 @@ public class PaymentComponent {
                 .append(mainIdentityNumber)  //주체 관리번호
                 .append(Strings.padEnd(String.valueOf(paymentDto.getCardNumber()), DataCommon.CARD_NUMBER, ' '))  //카드번호
                 .append(Strings.padStart(String.valueOf(paymentDto.getInstallment()), DataCommon.INSTALLMENT, '0'))  //할부일수
-                .append(paymentDto.getValidityRangeStr())  //유효기간
+                .append(paymentDto.getValidityRange())  //유효기간
                 .append(paymentDto.getCvc())  //cvc
                 .append(Strings.padStart(String.valueOf(paymentDto.getPrice()), DataCommon.PRICE, ' '))  //결제금액
                 .append(Strings.padStart(String.valueOf(paymentDto.getTax()), DataCommon.TAX, '0'))  //부가가치세
@@ -94,27 +90,38 @@ public class PaymentComponent {
         return paymentInfo.toString();
     }
 
+    //카드사 결제 통신 코드 생성
     public String getPaymentInfo(PaymentDto paymentDto, PaymentActionType paymentActionType, String identityNumber) {
         return this.getPaymentInfo(paymentDto, paymentActionType, identityNumber, "");
     }
 
-    public String getCancelPaymentInfo(PaymentCancelDto paymentCancelDto, CardInfoDto cardInfoDto, PaymentActionType paymentActionType, String identityNumber, String cancelIdentityNumber) {
+    //카드사 취소 통신 코드 생성
+    public String getCancelPaymentInfo(PaymentCancelDto paymentCancelDto, CardInfoDto cardInfoDto, PaymentActionType paymentActionType, String cancelIdentityNumber) {
+
         //Data Bind
-        PaymentDto paymentDto = PaymentDto.builder()
-                .cardNumber(cardInfoDto.getCardNumber())
-                .cvc(cardInfoDto.getCvc())
-                .validityRange(cardInfoDto.getValidityRange())
-                .price(paymentCancelDto.getPrice())
-                .tax(paymentCancelDto.getTax())
-                .installment(0)
-                .build();
-        return this.getPaymentInfo(paymentDto, paymentActionType, cancelIdentityNumber, identityNumber);
+        PaymentDto paymentDto = modelMapper.map(paymentCancelDto, PaymentDto.class);
+        modelMapper.map(cardInfoDto, paymentDto);
+
+        return this.getPaymentInfo(paymentDto, paymentActionType, cancelIdentityNumber, paymentCancelDto.getIdentityNumber());
     }
 
-
+    /**
+     * <pre>
+     *  @methodName : getIdentityNumber
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-04 오후 10:16
+     *  @summary : 관리번호 생성
+     *  @param : []
+     *  @return : java.lang.String
+     * </pre>
+     */
     public String getIdentityNumber() {
         String uuid = UUID.randomUUID().toString();
         return uuid.substring(24) + securityUtils.getIdentityHash(uuid);
+    }
+
+    public String getCardNumberHash(String cardNumber){
+        return securityUtils.getIdentityHash(cardNumber);
     }
 
 }
