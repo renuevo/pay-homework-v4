@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @Getter
 public class PaymentResponseDto {
     String identityNumber;              //관리번호
-    int installment;                    //할부개월
     int price;                          //결제금액
     int tax;                            //부가가치세
     LocalDateTime createDt;             //결제일

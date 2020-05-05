@@ -26,11 +26,11 @@ create table payment_instance
     identity_number varchar (20)  not null unique  comment '관리번호',
     cancel_identity_number varchar (20)  not null unique comment '취소 관리번호',
     cancel       boolean        default false not null comment '전체 취소 여부',
-    card_info    varchar(300)  null comment '암호화 카드 정보',
+    card_info    varchar(300)  not null comment '암호화 카드 정보',
     salt         varchar(16)    not null comment '암호화 salt',
     installment  int          not null comment '할부개월',
-    price        int          null comment '금액',
-    tax          int          null comment '부가가치세',
+    price        int          not null comment '금액',
+    tax          int          not null comment '부가가치세',
     create_dt    timestamp   not null comment '최초 결제일',
 
     constraint payment_instance_card_info_key_fk
@@ -45,8 +45,8 @@ create table payment_detail
     primary key,
     identity_number varchar (20)  not null  comment '관리번호',
     payment_type varchar(10) not null  comment '결제/취소',
-    installment  int         null  comment '할부개월',
-    price        int         null  comment '금액',
+    installment  int         not null  comment '할부개월',
+    price        int         not null  comment '금액',
     tax          int         not null  comment '부가가치세',
     create_dt    timestamp   not null  comment '내역 생성일',
 

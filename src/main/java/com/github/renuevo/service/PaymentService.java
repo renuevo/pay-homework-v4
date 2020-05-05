@@ -55,7 +55,7 @@ public class PaymentService {
      *  @return : reactor.core.publisher.Mono<com.github.renuevo.web.dto.PaymentResponseDto>
      * </pre>
      */
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Mono<PaymentResponseDto> paymentSave(PaymentDto paymentDto) {
 
         //이중 결제 확인후 결제 진행

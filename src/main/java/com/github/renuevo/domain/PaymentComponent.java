@@ -73,7 +73,7 @@ public class PaymentComponent {
     private String getPaymentInfo(PaymentDto paymentDto, PaymentActionType paymentActionType, String mainIdentityNumber, String subIdentityNumber) {
         StringBuilder paymentInfo = new StringBuilder(Strings.padEnd(paymentActionType.name(), DataCommon.CARD_ACTION, ' '))  //결제타입
                 .append(mainIdentityNumber)  //주체 관리번호
-                .append(Strings.padEnd(String.valueOf(paymentDto.getCardNumber()), DataCommon.CARD_NUMBER, ' '))  //카드번호
+                .append(Strings.padEnd(paymentDto.getCardNumber(), DataCommon.CARD_NUMBER, ' '))  //카드번호
                 .append(Strings.padStart(String.valueOf(paymentDto.getInstallment()), DataCommon.INSTALLMENT, '0'))  //할부일수
                 .append(paymentDto.getValidityRange())  //유효기간
                 .append(paymentDto.getCvc())  //cvc
