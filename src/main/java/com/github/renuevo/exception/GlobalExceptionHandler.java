@@ -3,7 +3,7 @@ package com.github.renuevo.exception;
 import com.github.renuevo.exception.service.CardUseException;
 import com.github.renuevo.exception.service.PaymentCancelException;
 import com.github.renuevo.exception.service.PaymentException;
-import com.github.renuevo.web.dto.ErrorResponseDto;
+import com.github.renuevo.exception.service.PaymentViewException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,67 +15,147 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * <pre>
+     *  @methodName : cardUseException
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-05 오후 2:22
+     *  @summary :
+     *  @param : [e]
+     *  @return : com.github.renuevo.exception.ErrorResponse
+     * </pre>
+     */
     @ExceptionHandler(CardUseException.class)
-    protected ErrorResponseDto cardUseException(CardUseException e) {
-        log.error("카드 이중 결제 Error : {}", e.getMessage(), e);
-        return ErrorResponseDto.of(ErrorCode.CARD_USE_STATUS_ERROR);
+    protected ErrorResponse cardUseException(CardUseException e) {
+        log.error("카드 이중 결제 Error");
+        return ErrorResponse.of(ErrorCode.CARD_USE_STATUS_ERROR);
     }
 
+    /**
+     * <pre>
+     *  @methodName : paymentException
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-05 오후 2:22
+     *  @summary :
+     *  @param : [e]
+     *  @return : com.github.renuevo.exception.ErrorResponse
+     * </pre>
+     */
     @ExceptionHandler(PaymentException.class)
-    protected ErrorResponseDto paymentException(PaymentException e) {
-        log.error("결제 Error : {}", e.getMessage(), e);
-        return ErrorResponseDto.of(ErrorCode.PAYMENT_ERROR);
+    protected ErrorResponse paymentException(PaymentException e) {
+        log.error("결제 Error : {}", e.getThrowable().getMessage(), e.getThrowable());
+        return ErrorResponse.of(ErrorCode.PAYMENT_ERROR);
     }
 
-
+    /**
+     * <pre>
+     *  @methodName : paymentCancelException
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-05 오후 2:22
+     *  @summary :
+     *  @param : [e]
+     *  @return : com.github.renuevo.exception.ErrorResponse
+     * </pre>
+     */
     @ExceptionHandler(PaymentCancelException.class)
-    protected ErrorResponseDto paymentCancelException(PaymentCancelException e) {
-        log.error("결제 취소 Error : {}", e.getMessage(), e);
-
-        if (e.getFieldError() != null)
-            return ErrorResponseDto.of(ErrorCode.PAYMENT_CANCEL_ERROR, e.getFieldError());
-        else
-            return ErrorResponseDto.of(ErrorCode.PAYMENT_CANCEL_ERROR);
+    protected ErrorResponse paymentCancelException(PaymentCancelException e) {
+        ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.PAYMENT_CANCEL_ERROR);
+        if (e.getThrowable() != null) {
+            log.error("결제 취소 Error : {}", e.getThrowable().getMessage(), e.getThrowable());
+        } else {
+            log.error("결제 취소 Error : {}", e.getFieldError());
+            errorResponse = ErrorResponse.of(ErrorCode.PAYMENT_CANCEL_ERROR, e.getFieldError());
+        }
+        return errorResponse;
     }
+
+    /**
+     * <pre>
+     *  @methodName : paymentCancelException
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-05 오후 2:22
+     *  @summary :
+     *  @param : [e]
+     *  @return : com.github.renuevo.exception.ErrorResponse
+     * </pre>
+     */
+    @ExceptionHandler(PaymentViewException.class)
+    protected ErrorResponse paymentViewException(PaymentViewException e) {
+        ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.PAYMENT_VIEW_ERROR);
+        if (e.getThrowable() != null) {
+            log.error("결제 조회 Error : {}", e.getThrowable().getMessage(), e.getThrowable());
+        } else {
+            log.error("결제 조회 Error : {}", e.getFieldError());
+            errorResponse = ErrorResponse.of(ErrorCode.PAYMENT_VIEW_ERROR, e.getFieldError());
+        }
+        return errorResponse;
+    }
+
+
 
 
     /**
-     * javax.validation.Valid or @Validated 으로 binding error 발생시 발생한다.
-     * HttpMessageConverter 에서 등록한 HttpMessageConverter binding 못할경우 발생
-     * 주로 @RequestBody, @RequestPart 어노테이션에서 발생
+     * <pre>
+     *  @methodName : handleMethodArgumentNotValidException
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-05 오후 2:20
+     *  @summary : Validated Error
+     *  @param : [e]
+     *  @return : com.github.renuevo.exception.ErrorResponse
+     * </pre>
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ErrorResponseDto handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    protected ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error("Validation Bind Error : {} ", e.getMessage(), e);
-        return ErrorResponseDto.of(ErrorCode.INVALID_INPUT_VALUE, e.getBindingResult());
+        return ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, e.getBindingResult());
     }
 
     /**
-     * @ModelAttribut 으로 binding error 발생시 BindException 발생한다.
-     * ref https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#mvc-ann-modelattrib-method-args
+     * <pre>
+     *  @methodName : handleBindException
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-05 오후 2:21
+     *  @summary : Parameter Binding Error
+     *  @param : [e]
+     *  @return : com.github.renuevo.exception.ErrorResponse
+     * </pre>
      */
     @ExceptionHandler(BindException.class)
-    protected ErrorResponseDto handleBindException(BindException e) {
+    protected ErrorResponse handleBindException(BindException e) {
         log.error("Parameter Bind Error : {} ", e.getMessage(), e);
-        return ErrorResponseDto.of(ErrorCode.INVALID_INPUT_VALUE, e.getBindingResult());
+        return ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, e.getBindingResult());
     }
 
     /**
-     * enum type 일치하지 않아 binding 못할 경우 발생
-     * 주로 @RequestParam enum으로 binding 못했을 경우 발생
+     * <pre>
+     *  @methodName : handleMethodArgumentTypeMismatchException
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-05 오후 2:21
+     *  @summary : Enum Binding Error
+     *  @param : [e]
+     *  @return : com.github.renuevo.exception.ErrorResponse
+     * </pre>
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    protected ErrorResponseDto handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+    protected ErrorResponse handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         log.error("Enum Bind Error : {} ", e.getMessage(), e);
-        return ErrorResponseDto.of(e);
+        return ErrorResponse.of(e);
     }
 
-
-    //그외 모든 에러 처리
+    /**
+     * <pre>
+     *  @methodName : handleException
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-05 오후 2:21
+     *  @summary : Default Exception Error
+     *  @param : [e]
+     *  @return : com.github.renuevo.exception.ErrorResponse
+     * </pre>
+     */
     @ExceptionHandler(Exception.class)
-    protected ErrorResponseDto handleException(Exception e) {
+    protected ErrorResponse handleException(Exception e) {
         log.error("Error : {}", e.getMessage(), e);
-        return ErrorResponseDto.of(ErrorCode.INTERNAL_SERVER_ERROR);
+        return ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
 }

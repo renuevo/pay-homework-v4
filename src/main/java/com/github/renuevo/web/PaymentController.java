@@ -1,15 +1,9 @@
 package com.github.renuevo.web;
 
 import com.github.renuevo.service.PaymentService;
-import com.github.renuevo.web.dto.PaymentCancelDto;
-import com.github.renuevo.web.dto.PaymentCancelResponseDto;
-import com.github.renuevo.web.dto.PaymentDto;
-import com.github.renuevo.web.dto.PaymentResponseDto;
+import com.github.renuevo.web.dto.*;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
@@ -21,7 +15,6 @@ import javax.validation.Valid;
  * @since : 2020-05-01
  * </pre>
  */
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class PaymentController {
@@ -70,8 +63,8 @@ public class PaymentController {
      * </pre>
      */
     @GetMapping("/payment/{identityNumber}")
-    public Mono<ServerResponse> getPayment(@PathVariable String identityNumber) {
-        return null;
+    public Mono<PaymentViewResponseDto> viewPayment(@PathVariable String identityNumber) {
+        return paymentService.getPaymentInfo(identityNumber);
     }
 
 }

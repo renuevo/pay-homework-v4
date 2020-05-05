@@ -6,17 +6,14 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-public class PaymentCancelException extends Exception{
-
+public class PaymentViewException extends Exception {
     private Throwable throwable;
     private List<ErrorResponse.FieldError> fieldError;
 
-    public PaymentCancelException(List<ErrorResponse.FieldError> fieldError){
+    public PaymentViewException(List<ErrorResponse.FieldError> fieldError){
         this.fieldError = fieldError;
     }
-
-    public PaymentCancelException(Throwable throwable){
+    public PaymentViewException(Throwable throwable){
         this.throwable = throwable;
     }
-
 }

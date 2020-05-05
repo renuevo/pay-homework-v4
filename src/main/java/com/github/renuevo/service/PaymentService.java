@@ -6,13 +6,12 @@ import com.github.renuevo.domain.card.CardCompanyEntity;
 import com.github.renuevo.domain.card.CardCompanyRepository;
 import com.github.renuevo.domain.card.CardInfoEntity;
 import com.github.renuevo.domain.card.CardInfoRepository;
-import com.github.renuevo.domain.payment.PaymentDetailEntity;
-import com.github.renuevo.domain.payment.PaymentDetailRepository;
-import com.github.renuevo.domain.payment.PaymentInstanceEntity;
-import com.github.renuevo.domain.payment.PaymentInstanceRepository;
+import com.github.renuevo.domain.payment.*;
+import com.github.renuevo.exception.ErrorResponse;
 import com.github.renuevo.exception.service.CardUseException;
 import com.github.renuevo.exception.service.PaymentCancelException;
 import com.github.renuevo.exception.service.PaymentException;
+import com.github.renuevo.exception.service.PaymentViewException;
 import com.github.renuevo.web.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +40,7 @@ public class PaymentService {
 
     private final CardInfoRepository cardInfoRepository;
     private final CardCompanyRepository cardCompanyRepository;
+    private final PaymentViewRepository paymentViewRepository;
     private final PaymentDetailRepository paymentDetailRepository;
     private final PaymentInstanceRepository paymentInstanceRepository;
 
@@ -86,7 +86,7 @@ public class PaymentService {
                     });
         })
                 //에러 처리
-                .onErrorResume(e -> Mono.error(new PaymentException()));
+                .onErrorResume(e -> Mono.error(new PaymentException(e)));
     }
 
     /**
@@ -101,28 +101,29 @@ public class PaymentService {
      */
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public Mono<PaymentCancelResponseDto> paymentCancel(PaymentCancelDto paymentCancelDto) {
-        return paymentInstanceRepository.findByIdentityNumber(paymentCancelDto.getIdentityNumber())
+        return paymentInstanceRepository.findByIdentityNumber(paymentCancelDto.getIdentityNumber()) //관리번호 조회
+                .switchIfEmpty(Mono.error(new PaymentCancelException(ErrorResponse.FieldError.of("identityNumber", "", "존재하지 않는 관리번호입니다"))))
+
 
                 //취소 진행
                 .zipWhen(paymentInstanceEntity -> {
 
                     //결제 금액보다 취소금액이 많음
                     if (paymentInstanceEntity.getPrice() < paymentCancelDto.getPrice())
-                        return Mono.error(new PaymentCancelException(ErrorResponseDto.FieldError.of("price", String.valueOf(paymentInstanceEntity.getPrice()), String.format("%s 은 %s보다 작아야 합니다", paymentInstanceEntity.getPrice(), paymentCancelDto.getPrice()))));
+                        return Mono.error(new PaymentCancelException(ErrorResponse.FieldError.of("price", String.valueOf(paymentInstanceEntity.getPrice()), String.format("%s 은 %s보다 작아야 합니다", paymentInstanceEntity.getPrice(), paymentCancelDto.getPrice()))));
 
                     //부가가치세가 취소금액보다 많음
                     if (paymentInstanceEntity.getTax() < paymentCancelDto.getTax())
-                        return Mono.error(new PaymentCancelException(ErrorResponseDto.FieldError.of("tax", String.valueOf(paymentInstanceEntity.getTax()), String.format("%s 은 %s보다 작아야 합니다", paymentInstanceEntity.getTax(), paymentCancelDto.getTax()))));
+                        return Mono.error(new PaymentCancelException(ErrorResponse.FieldError.of("tax", String.valueOf(paymentInstanceEntity.getTax()), String.format("%s 은 %s보다 작아야 합니다", paymentInstanceEntity.getTax(), paymentCancelDto.getTax()))));
 
                     //전체 취소 여부 확인
                     if (paymentInstanceEntity.getCancel())
-                        return Mono.error(new PaymentCancelException(ErrorResponseDto.FieldError.of("cancel", "", "이미 취소된 결제 입니다")));
+                        return Mono.error(new PaymentCancelException(ErrorResponse.FieldError.of("cancel", "", "이미 취소된 결제 입니다")));
 
 
                     //결제 취소 남은 금액 계산
                     paymentInstanceEntity.setPrice(paymentInstanceEntity.getPrice() - paymentCancelDto.getPrice());
                     paymentInstanceEntity.setTax(paymentInstanceEntity.getTax() - paymentCancelDto.getTax());
-
                     if (paymentInstanceEntity.getPrice() == 0 && paymentInstanceEntity.getTax() == 0)
                         paymentInstanceEntity.setCancel(true);      //전체 취소 여부
 
@@ -131,7 +132,7 @@ public class PaymentService {
                     CardInfoDto cardInfoDto = paymentComponent.getCardDecrypt(paymentInstanceEntity.getCardInfo(), paymentInstanceEntity.getSalt());
 
                     return Mono.zip(
-                            paymentInstanceRepository.save(paymentInstanceEntity).subscribeOn(Schedulers.elastic()),        //취소 결제
+                            paymentInstanceRepository.save(paymentInstanceEntity).subscribeOn(Schedulers.elastic()),        //취소 결제 업데이트
                             paymentDetailEntitySave(paymentCancelDto, paymentInstanceEntity, PaymentActionType.CANCEL),     //취소 결제 내역 저장
                             cardInfoEntitySave(paymentComponent.getCancelPaymentInfo(paymentCancelDto, cardInfoDto, PaymentActionType.CANCEL, paymentInstanceEntity.getCancelIdentityNumber()))           //카드사 통신
                     );
@@ -142,31 +143,39 @@ public class PaymentService {
                 .flatMap(tuple -> Mono.just(modelMapper.map(tuple.getT1(), PaymentCancelResponseDto.class)))
                 .onErrorResume(e -> {
                     if (e instanceof PaymentCancelException) return Mono.error(e);
-                    else return Mono.error(new PaymentCancelException());
+                    else return Mono.error(new PaymentCancelException(e));
                 })
                 .subscribeOn(Schedulers.elastic());
     }
 
+    /**
+     * <pre>
+     *  @methodName : getPaymentInfo
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-05 오후 3:22
+     *  @summary : 결제 정보 조회
+     *  @param : [identityNumber]
+     *  @return : reactor.core.publisher.Mono<com.github.renuevo.web.dto.PaymentViewResponseDto>
+     * </pre>
+     */
     @Transactional(readOnly = true)
-    public Mono<PaymentCancelResponseDto> getPaymentInfo(String identityNumber) {
-        return null;
-        /*
-        return paymentDetailRepository
-                .findByIdentityNumberSearch(identityNumber)
-                .flatMap(paymentInstanceEntity -> {
-                    try {
-                        //카드정보 복호화
-                        CardInfoDto cardInfoDto = paymentComponent.getCardDecrypt(paymentInstanceEntity.getCardInfo(), paymentInstanceEntity.getSalt());
+    public Mono<PaymentViewResponseDto> getPaymentInfo(String identityNumber) {
+        return paymentViewRepository.findByIdentityNumberSearch(identityNumber)
+                .switchIfEmpty(Mono.error(new PaymentViewException(ErrorResponse.FieldError.of("identityNumber", "", "존재하지 않는 관리번호입니다"))))
+                .flatMap(paymentViewEntity -> {
 
-                    } catch (Exception e) {
+                    //카드정보 복호화 및 마스킹 처리
+                    CardInfoDto cardInfoDto = paymentComponent.getCardDecrypt(paymentViewEntity.getCardInfo(), paymentViewEntity.getSalt());
+                    cardInfoDto.setCardNumber("******" + cardInfoDto.getCardNumber().substring(6, cardInfoDto.getCardNumber().length() - 3) + "***");
 
-                    }
-                    return Mono.just(new Exception());  //에러 정의
-                });
+                    //Response Data 생성
+                    PaymentViewResponseDto paymentViewResponseDto = modelMapper.map(paymentViewEntity, PaymentViewResponseDto.class);
+                    paymentViewResponseDto.setCardInfoDto(cardInfoDto);
+                    return Mono.just(paymentViewResponseDto);
+                })
+                .onErrorResume(e -> Mono.error(new PaymentViewException(e)));
 
-         */
     }
-
 
 
     /**

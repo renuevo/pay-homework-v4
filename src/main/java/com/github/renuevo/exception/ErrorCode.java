@@ -12,6 +12,10 @@ public enum  ErrorCode {
     //Cancel Error
     PAYMENT_CANCEL_ERROR(500, "C001", "결제 취소 도중 오류가 발생 하였습니다"),
 
+    //View Error
+    PAYMENT_VIEW_ERROR(500, "V001", "결제 조회를 할 수 있습니다"),
+
+    //기본 Basic Error
     INVALID_INPUT_VALUE(400, "B001", " Invalid Input Value"),
     METHOD_NOT_ALLOWED(405, "B002", " Invalid Input Value"),
     INTERNAL_SERVER_ERROR(500, "B003", "Server Error"),

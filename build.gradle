@@ -28,19 +28,20 @@ dependencies {
 
     implementation group: 'org.springframework.data', name: 'spring-data-r2dbc', version: '1.0.0.RELEASE'
     implementation 'org.springframework.security:spring-security-crypto'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'com.google.guava:guava:29.0-jre'
 
     implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.3.7'
     implementation group: 'io.r2dbc', name: 'r2dbc-pool', version: '0.8.2.RELEASE'
     implementation fileTree (dir: 'lib', include:['**/*.jar'])                      //bug fix version
-   // implementation group: 'io.r2dbc', name: 'r2dbc-h2', version: '0.8.3.RELEASE'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
+    /*
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
-
+*/
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }

@@ -1,6 +1,7 @@
 package com.github.renuevo.web.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +12,8 @@ import java.time.LocalDateTime;
  * @since : 2020-05-03
  * </pre>
  */
-@Data
+@Setter
+@Getter
 public class PaymentResponseDto {
     String identityNumber;              //관리번호
     int installment;                    //할부개월

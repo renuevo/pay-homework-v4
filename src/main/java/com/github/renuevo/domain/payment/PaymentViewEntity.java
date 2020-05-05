@@ -1,6 +1,5 @@
 package com.github.renuevo.domain.payment;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -9,19 +8,10 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
-/**
- * <pre>
- * @className : PaymentDetailEntity
- * @author : Deokhwa.Kim
- * @since : 2020-05-03
- * @summary : 카드내역 Entity
- * </pre>
- */
 @Getter
 @NoArgsConstructor
 @Table("payment_detail")
-public class PaymentDetailEntity {
-
+public class PaymentViewEntity {
     @Id
     private Long key;
 
@@ -37,16 +27,11 @@ public class PaymentDetailEntity {
     @Column("create_dt")
     private LocalDateTime createDt;         //생성일
 
-
-    @Builder
-    public PaymentDetailEntity(Long key, String identityNumber, String paymentType, int installment, int price, int tax) {
-        this.key = key;
-        this.identityNumber = identityNumber;
-        this.paymentType = paymentType;
-        this.installment = installment;
-        this.price = price;
-        this.tax = tax;
-        this.createDt = LocalDateTime.now();
-    }
+    //결제 정보
+    private int resultPrice;                //남은 금액
+    private int resultTax;                  //남은 부가가치세
+    private int resultInstallment;          //할부 개월
+    private String cardInfo;                //암호코드
+    private String salt;                    //암호 salt
 
 }
