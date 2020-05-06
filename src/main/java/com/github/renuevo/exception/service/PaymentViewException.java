@@ -18,10 +18,11 @@ public class PaymentViewException extends RuntimeException {
     private Throwable throwable;
     private List<ErrorResponse.FieldError> fieldError;
 
-    public PaymentViewException(List<ErrorResponse.FieldError> fieldError){
+    public PaymentViewException(List<ErrorResponse.FieldError> fieldError) {
         this.fieldError = fieldError;
     }
-    public PaymentViewException(Throwable throwable){
+
+    public PaymentViewException(Throwable throwable) {
         this.throwable = throwable;
     }
 }

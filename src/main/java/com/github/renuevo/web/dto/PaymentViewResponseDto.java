@@ -5,8 +5,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Setter
 @Getter
+@Setter
 public class PaymentViewResponseDto {
 
     private CardInfoDto cardInfoDto;        //카드정보

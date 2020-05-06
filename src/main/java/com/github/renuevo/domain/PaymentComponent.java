@@ -112,12 +112,11 @@ public class PaymentComponent {
      * </pre>
      */
     public String getIdentityNumber() {
-        String uuid = UUID.randomUUID().toString();
-        return uuid.substring(24) + securityUtils.getIdentityHash(uuid);
+        return securityUtils.getIdentityNumber();
     }
 
-    public String getCardNumberHash(String cardNumber){
-        return securityUtils.getIdentityHash(cardNumber);
+    public String getCardNumberHash(String cardNumber) {
+        return securityUtils.getHash(cardNumber);
     }
 
 }

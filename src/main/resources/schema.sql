@@ -1,3 +1,10 @@
+/* DB 초기화 */
+DROP TABLE IF EXISTS card_info;
+DROP TABLE IF EXISTS payment_instance;
+DROP TABLE IF EXISTS card_company;
+DROP TABLE IF EXISTS payment_detail;
+
+
 /* 카드사 Table */
 create table card_company
 (

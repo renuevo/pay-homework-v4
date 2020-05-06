@@ -1,123 +1,121 @@
 package com.github.renuevo.service;
 
+import com.github.renuevo.PayHomeworkV4Application;
+import com.github.renuevo.web.dto.PaymentCancelDto;
 import com.github.renuevo.web.dto.PaymentDto;
+import com.github.renuevo.web.dto.PaymentResponseDto;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
-import java.time.LocalDate;
-
-@SpringBootTest
+/**
+ * <pre>
+ * @className : PaymentServiceTest
+ * @author : Deokhwa.Kim
+ * @since : 2020-05-06
+ * </pre>
+ */
+@ExtendWith(SpringExtension.class)
+@DisplayName("전체 비즈니스 테스트")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = PayHomeworkV4Application.class)
 class PaymentServiceTest {
 
     @Autowired
     PaymentService paymentService;
 
-    @Test
-    void paymentCall() {
-        /*
-        Mono.zip(paymentService.paymentCall(PaymentDto.builder()
-                .cardNumber(1234567890123456)
+    @Autowired
+    ModelMapper modelMapper;
+
+    PaymentDto paymentDto1;
+    PaymentDto paymentDto2;
+
+    PaymentCancelDto paymentCancelDto1;
+    PaymentCancelDto paymentCancelDto2;
+
+    @BeforeEach
+    public void init() {
+
+        //결제 테스트
+        paymentDto1 = PaymentDto.builder()
+                .cardNumber("1234567890123456")
                 .cvc(555)
                 .installment(0)
-                .validityRange(LocalDate.now())
+                .validityRange("1125")
                 .price(10000000)
-                .build())
-                .publishOn(Schedulers.elastic()),
-                paymentService.paymentCall(PaymentDto.builder()
-                        .cardNumber(1234567890123456L)
-                        .cvc(555)
-                        .installment(0)
-                        .validityRange(LocalDate.now())
-                        .price(10000000)
-                        .build())
-                        .publishOn(Schedulers.elastic()),
-                paymentService.paymentCall(PaymentDto.builder()
-                        .cardNumber(1234567890123456L)
-                        .cvc(555)
-                        .installment(0)
-                        .validityRange(LocalDate.now())
-                        .price(10000000)
-                        .build())
-                        .publishOn(Schedulers.elastic()),
-                paymentService.paymentCall(PaymentDto.builder()
-                        .cardNumber(1234567890123456L)
-                        .cvc(555)
-                        .installment(0)
-                        .validityRange(LocalDate.now())
-                        .price(10000000)
-                        .build())
-                        .publishOn(Schedulers.elastic()),
-                paymentService.paymentCall(PaymentDto.builder()
-                        .cardNumber(1234567890123456L)
-                        .cvc(555)
-                        .installment(0)
-                        .validityRange(LocalDate.now())
-                        .price(10000000)
-                        .build())
-                        .publishOn(Schedulers.elastic())
-                ).subscribe();
+                .build();
+        paymentDto2 = modelMapper.map(paymentDto1, PaymentDto.class);
 
-        /*
-        var mono = paymentService.paymentCall(PaymentDto.builder()
-                .cardNumber(1234567890123456L)
-                .cvc(555)
-                .installment(0)
-                .validityRange(LocalDate.now())
-                .price(10000000)
-                .build())
-                .publishOn(Schedulers.parallel())
-                .zipWhen(paymentResponseDto ->
-                Mono.zip(
-                        paymentService.paymentCancel(PaymentCancelDto.builder()
-                                .identityNumber(paymentResponseDto.getIdentityNumber())
-                                .price(1000)
-                                .build()),
-                        paymentService.paymentCancel(PaymentCancelDto.builder()
-                                .identityNumber(paymentResponseDto.getIdentityNumber())
-                                .price(1000)
-                                .build()),
-                        paymentService.paymentCancel(PaymentCancelDto.builder()
-                                .identityNumber(paymentResponseDto.getIdentityNumber())
-                                .price(1000)
-                                .build()),
-                        paymentService.paymentCancel(PaymentCancelDto.builder()
-                                .identityNumber(paymentResponseDto.getIdentityNumber())
-                                .price(1000)
-                                .build()),
-                        paymentService.paymentCancel(PaymentCancelDto.builder()
-                                .identityNumber(paymentResponseDto.getIdentityNumber())
-                                .price(1000)
-                                .build()),
-                        paymentService.paymentCall(PaymentDto.builder()
-                                .cardNumber(214213123456L)
-                                .cvc(555)
-                                .installment(0)
-                                .validityRange(LocalDate.now())
-                                .price(1000000)
-                                .build())
-                ))
-                .flatMap(tuple -> Mono.just(tuple.getT1()))
-                .block();
+        //캔슬 테스트
+        PaymentResponseDto paymentResponseDto = paymentService.paymentSave(paymentDto1).block();
+        PaymentCancelDto paymentCancelDto1 = new PaymentCancelDto();
+        PaymentCancelDto paymentCancelDto2 = new PaymentCancelDto();
 
-
-         */
-
-
-        System.out.println("test");
-
-        //1. validation 체크를 한다
-
-        //2. 카드 정보를 암호화 한다
-
-        //3. 결제 관리저장
-
-        //4. 결제 내역저장
-
-        //5. 카드사 통신
+        assert paymentResponseDto != null;
+        paymentCancelDto1.setIdentityNumber(paymentResponseDto.getIdentityNumber());
+        paymentCancelDto1.setPrice(10000);
+        paymentCancelDto2.setIdentityNumber(paymentResponseDto.getIdentityNumber());
+        paymentCancelDto2.setPrice(10000);
 
     }
+
+    @Test
+    @DisplayName("같은 카드 다중결제 테스트")
+    void 다중결제_테스트() {
+
+        //다중 호출 Mono
+        var PaymentZipMono = Mono.zip(
+                paymentService.paymentSave(paymentDto1),
+                paymentService.paymentSave(paymentDto2))
+                .subscribeOn(Schedulers.parallel());
+
+        //when & then
+        StepVerifier.
+                create(PaymentZipMono)
+                .verifyError(); //에러 발생여부 확인
+    }
+
+
+    @Test
+    @DisplayName("동시 캔슬 테스트")
+    void 동시_캔슬_테스트() {
+
+        //given
+        var cancelMono = Mono.zip(
+                paymentService.paymentCancel(paymentCancelDto1),
+                paymentService.paymentCancel(paymentCancelDto2))
+                .subscribeOn(Schedulers.parallel());
+
+        //when & then
+        StepVerifier.
+                create(cancelMono)
+                .verifyError(); //에러 발생여부 확인
+    }
+
+
+    @Test
+    @DisplayName("순차 캔슬 테스트")
+    void 순차_캔슬_테스트() {
+
+        //given
+        var cancelMono = Mono.just(paymentService.paymentCancel(paymentCancelDto1))
+                .concatWith(Mono.just(paymentService.paymentCancel(paymentCancelDto1)));
+
+        //when & then
+        StepVerifier.
+                create(cancelMono)
+                .assertNext(Assertions::assertNotNull)
+                .assertNext(Assertions::assertNotNull)
+                .verifyComplete();
+    }
+
 
 }

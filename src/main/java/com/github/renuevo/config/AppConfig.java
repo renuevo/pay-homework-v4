@@ -9,6 +9,8 @@ import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 
+import static org.modelmapper.config.Configuration.AccessLevel;
+
 @Configuration
 public class AppConfig {
 

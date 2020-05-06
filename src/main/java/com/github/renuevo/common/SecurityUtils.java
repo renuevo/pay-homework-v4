@@ -9,6 +9,7 @@ import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 /**
  * <pre>
@@ -78,13 +79,28 @@ public class SecurityUtils {
      *  @methodName : getIdentityHash
      *  @author : Deokhwa.Kim
      *  @since : 2020-05-04 오후 10:18
-     *  @summary : 관리번호 생성 해싱키
+     *  @summary :  해싱키
      *  @param : [text]
      *  @return : java.lang.String
      * </pre>
      */
-    public String getIdentityHash(String text){
+    public String getHash(String text){
         return Hashing.murmur3_32().hashString(text, StandardCharsets.UTF_8).toString();
     }
+
+    /**
+     * <pre>
+     *  @methodName : getIdentityHash
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-04 오후 10:18
+     *  @summary : 관리번호 생성 해싱키
+     *  @return : java.lang.String
+     * </pre>
+     */
+    public String getIdentityNumber(){
+        String uuid = UUID.randomUUID().toString();
+        return uuid.substring(24) + getHash(uuid);
+    }
+
 
 }

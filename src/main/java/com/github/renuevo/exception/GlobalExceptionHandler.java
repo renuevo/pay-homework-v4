@@ -68,11 +68,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PaymentCancelException.class)
     protected ResponseEntity<ErrorResponse> paymentCancelException(PaymentCancelException e) {
         ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.PAYMENT_CANCEL_ERROR);
-        if (e.getThrowable() != null) {
-            log.error("결제 취소 Error : {}", e.getThrowable().getMessage(), e.getThrowable());
-        } else {
+        if (e.getFieldError() != null) {
             log.error("결제 취소 Error : {}", e.getFieldError());
             errorResponse = ErrorResponse.of(ErrorCode.PAYMENT_CANCEL_ERROR, e.getFieldError());
+        } else {
+            log.error("결제 취소 Error : {}", e.getThrowable().getMessage(), e.getThrowable());
         }
         return ResponseEntity.badRequest().body(errorResponse);
     }
@@ -90,11 +90,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PaymentViewException.class)
     protected ResponseEntity<ErrorResponse> paymentViewException(PaymentViewException e) {
         ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.PAYMENT_VIEW_ERROR);
-        if (e.getThrowable() != null) {
-            log.error("결제 조회 Error : {}", e.getThrowable().getMessage(), e.getThrowable());
-        } else {
+        if (e.getFieldError() != null) {
             log.error("결제 조회 Error : {}", e.getFieldError());
             errorResponse = ErrorResponse.of(ErrorCode.PAYMENT_VIEW_ERROR, e.getFieldError());
+        } else {
+            log.error("결제 조회 Error : {}", e.getThrowable().getMessage(), e.getThrowable());
         }
         return ResponseEntity.badRequest().body(errorResponse);
     }

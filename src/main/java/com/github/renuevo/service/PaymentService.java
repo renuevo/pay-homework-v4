@@ -14,14 +14,18 @@ import com.github.renuevo.exception.service.PaymentCancelException;
 import com.github.renuevo.exception.service.PaymentException;
 import com.github.renuevo.exception.service.PaymentViewException;
 import com.github.renuevo.web.dto.*;
+import com.sun.jdi.ClassType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 
 /**
@@ -55,37 +59,20 @@ public class PaymentService {
      *  @return : reactor.core.publisher.Mono<com.github.renuevo.web.dto.PaymentResponseDto>
      * </pre>
      */
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Mono<PaymentResponseDto> paymentSave(PaymentDto paymentDto) {
+        return duplicationPaymentCheck(paymentDto)   //이중 결제 확인후 결제 진행
+                .flatMap(cardInfoEntity -> {
 
-        //이중 결제 확인후 결제 진행
-        return duplicationPaymentCheck(paymentDto).flatMap(cardInfoEntity -> {
-
-            //카드 결제 진행
-            cardInfoEntity.setUseStatus(true);
-            return cardInfoRepository.save(cardInfoEntity).flatMap(cardInfoEntity1 ->
-
-                    //결제 현황 저장
-                    paymentInstanceEntitySave(paymentDto, cardInfoEntity1)
-                            .zipWhen(paymentInstanceEntity ->
-                                    Mono.zip(
-                                            paymentDetailEntitySave(paymentDto, paymentInstanceEntity, PaymentActionType.PAYMENT),     //결제내역 저장
-                                            cardInfoEntitySave(paymentComponent.getPaymentInfo(paymentDto, PaymentActionType.PAYMENT, paymentInstanceEntity.getIdentityNumber()))           //카드사 통신
-                                    ).subscribeOn(Schedulers.elastic())
-                            )
-
-
-                            //Response Data 생성
-                            .flatMap(tuple -> Mono.just(modelMapper.map(tuple.getT1(), PaymentResponseDto.class)))
-                            .subscribeOn(Schedulers.elastic()))
-
-
-                    //카드 결제 완료
-                    .doFinally(f -> {
-                        cardInfoEntity.setUseStatus(false);
-                        cardInfoRepository.save(cardInfoEntity).subscribe();
-                    });
-        })
+                    //카드 결제 진행
+                    cardInfoEntity.setUseStatus(true);
+                    return cardInfoRepository.save(cardInfoEntity)
+                            .flatMap(cardInfoEntity1 -> paymentMultiProcess(cardInfoEntity1, paymentDto))
+                            .doFinally(f -> { //카드 결제 완료
+                                cardInfoEntity.setUseStatus(false);
+                                cardInfoRepository.save(cardInfoEntity).subscribe();
+                            });
+                })
                 .onErrorResume(e -> Mono.error(new PaymentException(e)))
                 .subscribeOn(Schedulers.elastic());
     }
@@ -105,35 +92,26 @@ public class PaymentService {
         return paymentInstanceRepository.findByIdentityNumber(paymentCancelDto.getIdentityNumber()) //관리번호 조회
                 .switchIfEmpty(Mono.error(new PaymentCancelException(ErrorResponse.FieldError.of("identityNumber", "", "존재하지 않는 관리번호입니다"))))
                 .filter(paymentInstanceEntity -> GlobalValidation.paymentCancelValidation(paymentInstanceEntity, paymentCancelDto))   //취소 validation check
-
-                //취소 진행
-                .zipWhen(paymentInstanceEntity -> {
-
-                    //결제 취소 남은 금액 계산
-                    paymentInstanceEntity.setPrice(paymentInstanceEntity.getPrice() - paymentCancelDto.getPrice());
-                    paymentInstanceEntity.setTax(paymentInstanceEntity.getTax() - paymentCancelDto.getTax());
-                    if (paymentInstanceEntity.getPrice() == 0 && paymentInstanceEntity.getTax() == 0)
-                        paymentInstanceEntity.setCancel(true);      //전체 취소 여부
-
+                .flatMap(paymentInstanceEntity -> cancelPayment(paymentInstanceEntity, paymentCancelDto))   //결제 취소 데이터 생성
+                .zipWhen(tuple2 -> {
+                    //계산된 결제 정보
+                    PaymentInstanceEntity paymentInstanceEntity = tuple2.getT1();
+                    PaymentCancelDto paymentCancelDtoSave = tuple2.getT2();
 
                     //카드정보 복호화
                     CardInfoDto cardInfoDto = paymentComponent.getCardDecrypt(paymentInstanceEntity.getCardInfo(), paymentInstanceEntity.getSalt());
 
                     return Mono.zip(
                             paymentInstanceRepository.save(paymentInstanceEntity).subscribeOn(Schedulers.elastic()),        //취소 결제 업데이트
-                            paymentDetailEntitySave(paymentCancelDto, paymentInstanceEntity, PaymentActionType.CANCEL),     //취소 결제 내역 저장
-                            cardInfoEntitySave(paymentComponent.getCancelPaymentInfo(paymentCancelDto, cardInfoDto, PaymentActionType.CANCEL, paymentInstanceEntity.getCancelIdentityNumber()))           //카드사 통신
+                            paymentDetailEntitySave(paymentCancelDtoSave, paymentInstanceEntity, PaymentActionType.CANCEL),     //취소 결제 내역 저장
+                            cardInfoEntitySave(paymentComponent.getCancelPaymentInfo(paymentCancelDtoSave, cardInfoDto, PaymentActionType.CANCEL, paymentInstanceEntity.getCancelIdentityNumber()))           //카드사 통신
                     );
                 })
-
-
-                //Response Data 생성
-                .flatMap(tuple -> Mono.just(modelMapper.map(tuple.getT1(), PaymentCancelResponseDto.class)))
+                .flatMap(tuple -> Mono.just(modelMapper.map(tuple.getT1().getT1(), PaymentCancelResponseDto.class)))              //Response Data 생성
                 .onErrorResume(e -> {
                     if (e instanceof PaymentCancelException) return Mono.error(e);
                     else return Mono.error(new PaymentCancelException(e));
-                })
-                .subscribeOn(Schedulers.elastic());
+                }).subscribeOn(Schedulers.elastic());
     }
 
     /**
@@ -162,8 +140,10 @@ public class PaymentService {
                     return Mono.just(paymentViewResponseDto);
 
                 })
-                .onErrorResume(e -> Mono.error(new PaymentViewException(e)))
-                .subscribeOn(Schedulers.elastic());
+                .onErrorResume(e -> {
+                    if (e instanceof PaymentViewException) return Mono.error(e);
+                    else return Mono.error(new PaymentViewException(e));
+                }).subscribeOn(Schedulers.elastic());
     }
 
 
@@ -177,13 +157,13 @@ public class PaymentService {
      *  @return : reactor.core.publisher.Mono<com.github.renuevo.domain.card.CardInfoEntity>
      * </pre>
      */
-    private Mono<CardInfoEntity> duplicationPaymentCheck(PaymentDto paymentDto) {
+    @Transactional
+    public Mono<CardInfoEntity> duplicationPaymentCheck(PaymentDto paymentDto) {
         return cardInfoRepository.findByCardNumber(paymentComponent.getCardNumberHash(paymentDto.getCardNumber()))   //카드 정보 조회
 
                 //카드 정보 미존재일 경우 신규 생성
                 .switchIfEmpty(
-                        Mono.just(CardInfoEntity
-                                .builder()
+                        Mono.just(CardInfoEntity.builder()
                                 .key(null)  //신규 생성
                                 .cardNumber(paymentComponent.getCardNumberHash(paymentDto.getCardNumber()))
                                 .cardInfo(paymentComponent.getCardEncrypt(paymentDto))
@@ -198,6 +178,28 @@ public class PaymentService {
 
     /**
      * <pre>
+     *  @methodName : paymentMultiProcess
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-06 오후 7:08
+     *  @summary : 결제 관련 프로세스 진행 -> zip 구조로 자유롭게 추가 가능
+     *  @param : [paymentInstanceEntity, paymentDto]
+     *  @return : reactor.core.publisher.Mono<reactor.util.function.Tuple2<com.github.renuevo.domain.payment.PaymentDetailEntity,com.github.renuevo.domain.card.CardCompanyEntity>>
+     * </pre>
+     */
+    @Transactional
+    public Mono<PaymentResponseDto> paymentMultiProcess(CardInfoEntity cardInfoEntity, PaymentDto paymentDto) {
+        return paymentInstanceEntitySave(paymentDto, cardInfoEntity)
+                .zipWhen(paymentInstanceEntity ->
+                        Mono.zip(
+                                paymentDetailEntitySave(paymentDto, paymentInstanceEntity, PaymentActionType.PAYMENT),     //결제내역 저장
+                                cardInfoEntitySave(paymentComponent.getPaymentInfo(paymentDto, PaymentActionType.PAYMENT, paymentInstanceEntity.getIdentityNumber()))           //카드사 통신
+                        ).subscribeOn(Schedulers.elastic()))   //결제 프로세스
+                .flatMap(tuple -> Mono.just(modelMapper.map(tuple.getT1(), PaymentResponseDto.class)));  //Response Data 생성
+
+    }
+
+    /**
+     * <pre>
      *  @methodName : paymentInstanceEntityMono
      *  @author : Deokhwa.Kim
      *  @since : 2020-05-05 오후 12:44
@@ -206,7 +208,8 @@ public class PaymentService {
      *  @return : reactor.core.publisher.Mono<com.github.renuevo.domain.payment.PaymentInstanceEntity>
      * </pre>
      */
-    private Mono<PaymentInstanceEntity> paymentInstanceEntitySave(PriceDto priceDto, CardInfoEntity cardInfoEntity) {
+    @Transactional
+    public Mono<PaymentInstanceEntity> paymentInstanceEntitySave(PriceDto priceDto, CardInfoEntity cardInfoEntity) {
         return paymentInstanceRepository.save(PaymentInstanceEntity
                 .builder()
                 .key(null)  //신규 결제
@@ -230,7 +233,8 @@ public class PaymentService {
      *  @return : reactor.core.publisher.Mono<com.github.renuevo.domain.card.CardCompanyEntity>
      * </pre>
      */
-    private Mono<CardCompanyEntity> cardInfoEntitySave(String paymentInfo) {
+    @Transactional
+    public Mono<CardCompanyEntity> cardInfoEntitySave(String paymentInfo) {
         return cardCompanyRepository.save(CardCompanyEntity.builder()              //카드사 통신
                 .key(null)
                 .paymentInfo(paymentInfo)
@@ -247,7 +251,8 @@ public class PaymentService {
      *  @return : reactor.core.publisher.Mono<com.github.renuevo.domain.payment.PaymentDetailEntity>
      * </pre>
      */
-    private Mono<PaymentDetailEntity> paymentDetailEntitySave(PriceDto priceDto, PaymentInstanceEntity paymentInstanceEntity, PaymentActionType paymentActionType) {
+    @Transactional
+    public Mono<PaymentDetailEntity> paymentDetailEntitySave(PriceDto priceDto, PaymentInstanceEntity paymentInstanceEntity, PaymentActionType paymentActionType) {
         return paymentDetailRepository.save(PaymentDetailEntity.builder()    //결제내역
                 .key(null)  //신규 생성
                 .installment(priceDto.getInstallment())
@@ -256,5 +261,34 @@ public class PaymentService {
                 .price(priceDto.getPrice())
                 .tax(priceDto.getTax()).build())
                 .subscribeOn(Schedulers.elastic());
+    }
+
+    /**
+     * <pre>
+     *  @methodName : cancelPayment
+     *  @author : Deokhwa.Kim
+     *  @since : 2020-05-07 오전 12:26
+     *  @summary : 결제 취소 데이터 생성
+     *  @param : [paymentInstanceEntity, paymentCancelDto]
+     *  @return : reactor.core.publisher.Mono<com.github.renuevo.domain.payment.PaymentInstanceEntity>
+     * </pre>
+     */
+    public Mono<Tuple2<PaymentInstanceEntity, PaymentCancelDto>> cancelPayment(PaymentInstanceEntity paymentInstanceEntity, PaymentCancelDto paymentCancelDto) {
+
+        //결제 취소 남은 금액 계산
+        paymentInstanceEntity.setPrice(paymentInstanceEntity.getPrice() - paymentCancelDto.getPrice());
+
+        //자동계산 결제 취소 성공
+        if (paymentInstanceEntity.getPrice() == 0 && paymentCancelDto.taxCheck() && paymentInstanceEntity.getTax() < paymentCancelDto.getTax())
+            paymentCancelDto.setTax(paymentInstanceEntity.getTax());
+
+        //부가가치세 계산
+        paymentInstanceEntity.setTax(paymentInstanceEntity.getTax() - paymentCancelDto.getTax());
+
+        //전체 취소 여부
+        if (paymentInstanceEntity.getPrice() == 0 && paymentInstanceEntity.getTax() == 0)
+            paymentInstanceEntity.setCancel(true);
+
+        return Mono.just(Tuples.of(paymentInstanceEntity, paymentCancelDto));
     }
 }

@@ -14,16 +14,16 @@ import java.util.List;
  * </pre>
  */
 @Getter
-public class PaymentCancelException extends RuntimeException{
+public class PaymentCancelException extends RuntimeException {
 
     private Throwable throwable;
     private List<ErrorResponse.FieldError> fieldError;
 
-    public PaymentCancelException(List<ErrorResponse.FieldError> fieldError){
+    public PaymentCancelException(List<ErrorResponse.FieldError> fieldError) {
         this.fieldError = fieldError;
     }
 
-    public PaymentCancelException(Throwable throwable){
+    public PaymentCancelException(Throwable throwable) {
         this.throwable = throwable;
     }
 

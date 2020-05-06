@@ -1,33 +1,35 @@
 package com.github.renuevo.common;
 
-import static org.assertj.core.api.Assertions.*;
-
-import com.google.common.collect.Lists;
+import com.github.renuevo.PayHomeworkV4Application;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@SpringBootTest
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * <pre>
+ * @className : SecurityUtilsTest
+ * @author : Deokhwa.Kim
+ * @since : 2020-05-06
+ * </pre>
+ */
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = PayHomeworkV4Application.class)
 class SecurityUtilsTest {
 
     @Autowired
     SecurityUtils securityUtils;
 
-    /**
-     * <pre>
-     *  @methodName : encryptTest
-     *  @author : Deokhwa.Kim
-     *  @since : 2020-05-03 오전 12:14
-     *  @summary : 암호화 모듈 테스트
-     *  @param : []
-     *  @return : void
-     * </pre>
-     */
     @Test
-    public void encryptTest() {
+    @DisplayName("암복호화 모듈 테스트 진행")
+    public void 암복호화_테스트() {
 
         //given
         List<String> cardInfoList = List.of("121314141224", "212412412213123", "321412312312");

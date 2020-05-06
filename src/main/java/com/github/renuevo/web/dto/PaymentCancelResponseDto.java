@@ -10,8 +10,8 @@ import lombok.Setter;
  * @since : 2020-05-05
  * </pre>
  */
-@Setter
 @Getter
+@Setter
 public class PaymentCancelResponseDto {
     String identityNumber;      //관리번호
     int price;                  //취소후 결제된 금액
