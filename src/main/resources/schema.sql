@@ -1,12 +1,6 @@
-/* DB 초기화 */
-DROP TABLE IF EXISTS card_info;
-DROP TABLE IF EXISTS payment_instance;
-DROP TABLE IF EXISTS card_company;
-DROP TABLE IF EXISTS payment_detail;
-
 
 /* 카드사 Table */
-create table card_company
+CREATE TABLE IF NOT EXISTS card_company
 (
     `key`        int auto_increment comment 'key'
         primary key,
@@ -15,7 +9,7 @@ create table card_company
 
 
 /* 카드 상태 정보 Table */
-create table card_info
+CREATE TABLE IF NOT EXISTS card_info
 (
     `key`        int auto_increment comment 'key'
         primary key,
@@ -26,7 +20,7 @@ create table card_info
 
 
 /* 결제 현황 Table */
-create table payment_instance
+CREATE TABLE IF NOT EXISTS payment_instance
 (
     `key`   int   auto_increment comment 'key'
     primary key,
@@ -40,13 +34,15 @@ create table payment_instance
     tax          int          not null comment '부가가치세',
     create_dt    timestamp   not null comment '최초 결제일',
 
+
     constraint payment_instance_card_info_key_fk
         foreign key (card_info) references card_info (`card_info`)
+
 );
 
 
 /* 결제 상세 내역 현황 Table */
-create table payment_detail
+create table IF NOT EXISTS payment_detail
 (
     `key`        int auto_increment  comment 'key'
     primary key,
@@ -57,13 +53,14 @@ create table payment_detail
     tax          int         not null  comment '부가가치세',
     create_dt    timestamp   not null  comment '내역 생성일',
 
+
     constraint payment_detail_identity_key_fk
         foreign key (identity_number) references payment_instance (`identity_number`)
 );
 
 
 /* 카드 조회 Index */
-create unique index search_card_index on card_info (card_number);
+create unique index IF NOT EXISTS search_card_index on card_info (card_number);
 
 /* 카드 내역 조회 Index */
-create unique index search_detail_index on payment_detail (identity_number, create_dt DESC);
+create unique index IF NOT EXISTS search_detail_index on payment_detail (identity_number, create_dt DESC);

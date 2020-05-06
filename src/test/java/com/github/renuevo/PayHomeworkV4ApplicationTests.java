@@ -7,9 +7,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -25,22 +25,20 @@ import static org.mockito.ArgumentMatchers.anyString;
  * </pre>
  */
 @ExtendWith(SpringExtension.class)
+@AutoConfigureWebTestClient
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = PayHomeworkV4Application.class)
 class PayHomeworkV4ApplicationTests {
 
     @Autowired
-    ApplicationContext context;
     WebTestClient webTestClient;
 
     @MockBean
-    @Autowired
     SecurityUtils securityUtils;
 
     String base = "cardNumber=1234567890123456&validityRange=1125&cvc=777&installment=00";
 
     @BeforeEach
     public void init() {
-        this.webTestClient = WebTestClient.bindToApplicationContext(this.context).build();
         Mockito.when(securityUtils.getHash(anyString())).thenReturn("12341234");
         Mockito.when(securityUtils.getEncode(anyString())).thenReturn("e3740bf7d51ab64938a3502eda9ecc1a2b2412d15a2c2fda3e442f82693b6a184916d2c804a1def4ec2f3d029fc799ee");
         Mockito.when(securityUtils.getDecode(anyString())).thenReturn("1234567890123456,1125,777");
@@ -87,7 +85,6 @@ class PayHomeworkV4ApplicationTests {
                 break;
         }
     }
-
 
     @ParameterizedTest
     @CsvFileSource(resources = "/case2.csv")
