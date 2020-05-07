@@ -9,9 +9,7 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @SpringBootApplication
 @EnableR2dbcRepositories
 public class PayHomeworkV4Application {
-
     public static void main(String[] args) {
         SpringApplication.run(PayHomeworkV4Application.class, args);
     }
-
 }

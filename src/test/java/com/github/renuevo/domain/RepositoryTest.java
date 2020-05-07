@@ -1,12 +1,13 @@
 package com.github.renuevo.domain;
 
 import com.github.renuevo.PayHomeworkV4Application;
-import com.github.renuevo.domain.card.CardInfoEntity;
-import com.github.renuevo.domain.card.CardInfoRepository;
-import com.github.renuevo.domain.payment.*;
-import com.github.renuevo.service.PaymentService;
-import com.github.renuevo.web.dto.PaymentDto;
-import com.github.renuevo.web.dto.PaymentResponseDto;
+import com.github.renuevo.domain.card.dao.CardInfoEntity;
+import com.github.renuevo.domain.card.dao.CardInfoRepository;
+import com.github.renuevo.domain.payment.common.PaymentActionType;
+import com.github.renuevo.domain.payment.dao.*;
+import com.github.renuevo.service.PaymentWebService;
+import com.github.renuevo.domain.payment.dto.PaymentDto;
+import com.github.renuevo.domain.payment.dto.PaymentResponseDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ public class RepositoryTest {
     PaymentViewRepository paymentViewRepository;
 
     @Autowired
-    PaymentService paymentService;
+    PaymentWebService paymentWebService;
 
     @Test
     @DisplayName("결제 정보 저장 테스트 진행")
@@ -134,7 +135,7 @@ public class RepositoryTest {
                 .price(10000)
                 .validityRange("1125")
                 .build();
-        PaymentResponseDto paymentResponseDto = paymentService.paymentSave(paymentDto).block();
+        PaymentResponseDto paymentResponseDto = paymentWebService.paymentSave(paymentDto).block();
 
         Assertions.assertNotNull(paymentResponseDto);
         Mono<PaymentViewEntity> paymentViewEntityMono = paymentViewRepository.findByIdentityNumberSearch(paymentResponseDto.getIdentityNumber());

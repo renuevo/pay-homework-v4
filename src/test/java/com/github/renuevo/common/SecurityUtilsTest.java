@@ -1,6 +1,7 @@
 package com.github.renuevo.common;
 
 import com.github.renuevo.PayHomeworkV4Application;
+import com.github.renuevo.grobal.module.SecurityUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,7 +1,7 @@
 package com.github.renuevo.web;
 
-import com.github.renuevo.service.PaymentService;
-import com.github.renuevo.web.dto.*;
+import com.github.renuevo.domain.payment.dto.*;
+import com.github.renuevo.service.PaymentWebService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -19,21 +19,21 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    private final PaymentWebService paymentWebService;
 
     /**
      * <pre>
-     *  @methodName : test
+     *  @methodName : save
      *  @author : Deokhwa.Kim
-     *  @since : 2020-05-01 오후 11:02
+     *  @since : 2020-05-07 오후 1:01
      *  @summary : 결제
-     *  @param : [cardPayDto, errors]
-     *  @return : java.lang.String
+     *  @param : [paymentDto]
+     *  @return : reactor.core.publisher.Mono<com.github.renuevo.domain.payment.dto.PaymentResponseDto>
      * </pre>
      */
     @PostMapping("/payment/save")
-    public Mono<PaymentResponseDto> save(@ModelAttribute @Valid PaymentDto paymentDto) throws Exception {
-        return paymentService.paymentSave(paymentDto);
+    public Mono<PaymentResponseDto> save(@ModelAttribute @Valid PaymentDto paymentDto) {
+        return paymentWebService.paymentSave(paymentDto);
     }
 
     /**
@@ -49,7 +49,7 @@ public class PaymentController {
     @PostMapping("/payment/cancel/{identityNumber}")
     public Mono<PaymentCancelResponseDto> cancel(@PathVariable String identityNumber, @ModelAttribute @Valid PaymentCancelDto paymentCancelDto) {
         paymentCancelDto.setIdentityNumber(identityNumber);
-        return paymentService.paymentCancel(paymentCancelDto);
+        return paymentWebService.paymentCancel(paymentCancelDto);
     }
 
     /**
@@ -64,7 +64,7 @@ public class PaymentController {
      */
     @GetMapping("/payment/{identityNumber}")
     public Mono<PaymentViewResponseDto> viewPayment(@PathVariable String identityNumber) {
-        return paymentService.getPaymentInfo(identityNumber);
+        return paymentWebService.getPaymentInfo(identityNumber);
     }
 
 }

@@ -1,6 +1,6 @@
 package com.github.renuevo;
 
-import com.github.renuevo.common.SecurityUtils;
+import com.github.renuevo.grobal.module.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
