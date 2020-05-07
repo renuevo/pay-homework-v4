@@ -13,7 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PaymentCancelResponseDto {
-    String identityNumber;      //관리번호
-    int price;                  //취소후 결제된 금액
-    int tax;                    //취소후 결제된 부가가치세
+    private String identityNumber;      //관리번호
+    private int price;                  //취소후 결제된 금액
+    private int tax;                    //취소후 결제된 부가가치세
 }

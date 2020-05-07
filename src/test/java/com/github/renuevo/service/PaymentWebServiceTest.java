@@ -4,12 +4,12 @@ import com.github.renuevo.PayHomeworkV4Application;
 import com.github.renuevo.domain.payment.dto.PaymentCancelDto;
 import com.github.renuevo.domain.payment.dto.PaymentDto;
 import com.github.renuevo.domain.payment.dto.PaymentResponseDto;
+import com.github.renuevo.setup.PaymentDtoBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -30,54 +30,44 @@ import reactor.test.StepVerifier;
 class PaymentWebServiceTest {
 
     @Autowired
-    PaymentWebService paymentWebService;
+    private PaymentWebService paymentWebService;
 
-    @Autowired
-    ModelMapper modelMapper;
-
-    PaymentDto paymentDto1;
-    PaymentDto paymentDto2;
-
-    PaymentCancelDto paymentCancelDto1;
-    PaymentCancelDto paymentCancelDto2;
+    private PaymentCancelDto paymentCancelDto1;
+    private PaymentCancelDto paymentCancelDto2;
 
     @BeforeEach
     public void init() {
 
         //결제 테스트
-        paymentDto1 = PaymentDto.builder()
-                .cardNumber("1234567890123456")
-                .cvc(555)
-                .installment(0)
-                .validityRange("1125")
-                .price(10000000)
-                .build();
-        paymentDto2 = modelMapper.map(paymentDto1, PaymentDto.class);
+        PaymentDto paymentDto = PaymentDtoBuilder.build();
 
-        //캔슬 테스트
-        PaymentResponseDto paymentResponseDto = paymentWebService.paymentSave(paymentDto1).block();
-        PaymentCancelDto paymentCancelDto1 = new PaymentCancelDto();
-        PaymentCancelDto paymentCancelDto2 = new PaymentCancelDto();
+        //given
+        PaymentResponseDto paymentResponseDto = paymentWebService.paymentSave(paymentDto).block();
+        paymentCancelDto1 = new PaymentCancelDto();
+        paymentCancelDto2 = new PaymentCancelDto();
 
         assert paymentResponseDto != null;
         paymentCancelDto1.setIdentityNumber(paymentResponseDto.getIdentityNumber());
-        paymentCancelDto1.setPrice(10000);
         paymentCancelDto2.setIdentityNumber(paymentResponseDto.getIdentityNumber());
-        paymentCancelDto2.setPrice(10000);
+
+        paymentCancelDto1.setPrice(1000);
+        paymentCancelDto2.setPrice(1000);
 
     }
 
     @Test
-    @DisplayName("같은 카드 다중결제 테스트")
+    @DisplayName("같은 카드 다중 결제 테스트")
     void 다중결제_테스트() {
 
+        //when
         //다중 호출 Mono
         var PaymentZipMono = Mono.zip(
-                paymentWebService.paymentSave(paymentDto1),
-                paymentWebService.paymentSave(paymentDto2))
+                paymentWebService.paymentSave(PaymentDtoBuilder.build()),
+                paymentWebService.paymentSave(PaymentDtoBuilder.build()),
+                paymentWebService.paymentSave(PaymentDtoBuilder.build()))
                 .subscribeOn(Schedulers.parallel());
 
-        //when & then
+        //then
         StepVerifier.
                 create(PaymentZipMono)
                 .verifyError(); //에러 발생여부 확인
@@ -87,14 +77,13 @@ class PaymentWebServiceTest {
     @Test
     @DisplayName("동시 캔슬 테스트")
     void 동시_캔슬_테스트() {
-
-        //given
+        //when
         var cancelMono = Mono.zip(
                 paymentWebService.paymentCancel(paymentCancelDto1),
                 paymentWebService.paymentCancel(paymentCancelDto2))
                 .subscribeOn(Schedulers.parallel());
 
-        //when & then
+        //then
         StepVerifier.
                 create(cancelMono)
                 .verifyError(); //에러 발생여부 확인
@@ -104,12 +93,11 @@ class PaymentWebServiceTest {
     @Test
     @DisplayName("순차 캔슬 테스트")
     void 순차_캔슬_테스트() {
-
-        //given
+        //when
         var cancelMono = Mono.just(paymentWebService.paymentCancel(paymentCancelDto1))
                 .concatWith(Mono.just(paymentWebService.paymentCancel(paymentCancelDto1)));
 
-        //when & then
+        //then
         StepVerifier.
                 create(cancelMono)
                 .assertNext(Assertions::assertNotNull)

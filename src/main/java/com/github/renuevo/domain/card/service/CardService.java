@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 /**
  * <pre>
@@ -77,7 +76,7 @@ public class CardService {
         return cardCompanyRepository.save(CardCompanyEntity.builder()              //카드 결제 정보 저장
                 .key(null)
                 .paymentInfo(cardComponent.getPaymentInfo(paymentDto, paymentActionType, paymentInstanceEntity.getCardInfo(), paymentInstanceEntity.getIdentityNumber()))
-                .build()).subscribeOn(Schedulers.elastic());
+                .build());
     }
 
     /**

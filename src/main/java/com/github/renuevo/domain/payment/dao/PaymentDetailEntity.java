@@ -1,5 +1,6 @@
 package com.github.renuevo.domain.payment.dao;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
  * </pre>
  */
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access= AccessLevel.PROTECTED)
 @Table("payment_detail")
 public class PaymentDetailEntity {
 

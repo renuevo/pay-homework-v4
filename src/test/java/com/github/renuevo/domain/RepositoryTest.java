@@ -3,12 +3,13 @@ package com.github.renuevo.domain;
 import com.github.renuevo.PayHomeworkV4Application;
 import com.github.renuevo.domain.card.dao.CardInfoEntity;
 import com.github.renuevo.domain.card.dao.CardInfoRepository;
-import com.github.renuevo.domain.payment.common.PaymentActionType;
 import com.github.renuevo.domain.payment.dao.*;
-import com.github.renuevo.service.PaymentWebService;
-import com.github.renuevo.domain.payment.dto.PaymentDto;
 import com.github.renuevo.domain.payment.dto.PaymentResponseDto;
-import org.junit.jupiter.api.Assertions;
+import com.github.renuevo.service.PaymentWebService;
+import com.github.renuevo.setup.CardInfoEntityBuilder;
+import com.github.renuevo.setup.PaymentDetailEntityBuilder;
+import com.github.renuevo.setup.PaymentDtoBuilder;
+import com.github.renuevo.setup.PaymentInstanceEntityBuilder;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,74 +52,37 @@ public class RepositoryTest {
     @DisplayName("결제 정보 저장 테스트 진행")
     public void 결제_SAVE_테스트() {
 
-        //given
-        String cardInfo = "_446PAYMENT___XXXXXXXXXXXXXXXXXXXX";
-        String identityNumber = "Test Identity";
-
-        //카드정보
-        CardInfoEntity cardInfoEntity = CardInfoEntity.builder()
-                .key(null)
-                .useStatus(false)
-                .cardInfo(cardInfo)
-                .cardNumber("########")
-                .build();
-
-        //결제
-        PaymentInstanceEntity paymentInstanceEntity = PaymentInstanceEntity.builder()
-                .key(null)
-                .identityNumber(identityNumber)
-                .cardInfo(cardInfo)
-                .salt("salt")
-                .cancelIdentityNumber("test_cancel")
-                .installment(0)
-                .price(1243251)
-                .tax(10)
-                .build();
-
-        //결제 내역
-        PaymentDetailEntity paymentDetailEntity = PaymentDetailEntity.builder()
-                .key(null)
-                .identityNumber(identityNumber)
-                .paymentType(PaymentActionType.PAYMENT.name())
-                .installment(0)
-                .price(1243251)
-                .tax(10)
-                .build();
-
-
+        //when
         //카드 저장
-        Mono<CardInfoEntity> cardInfoEntityMono = cardInfoRepository.save(cardInfoEntity);
+        Mono<CardInfoEntity> cardInfoEntityMono = cardInfoRepository.save(CardInfoEntityBuilder.newBuild());
 
         //결제 저장
-        Mono<PaymentInstanceEntity> paymentInstanceEntityMono = paymentInstanceRepository.save(paymentInstanceEntity);
+        Mono<PaymentInstanceEntity> paymentInstanceEntityMono = paymentInstanceRepository.save(PaymentInstanceEntityBuilder.newBuild());
 
         //결제 내역 저장
-        Mono<PaymentDetailEntity> paymentDetailEntityMono = paymentDetailRepository.save(paymentDetailEntity);
+        Mono<PaymentDetailEntity> paymentDetailEntityMono = paymentDetailRepository.save(PaymentDetailEntityBuilder.newPaymentBuild());
 
 
-        //when & then
+        //then
         //Card Repository Test
         StepVerifier.
                 create(cardInfoEntityMono)
                 .assertNext(cardInfoEntitySave -> assertNotNull(cardInfoEntitySave.getKey()))
                 .thenAwait()
-                .expectComplete()
-                .verify();
+                .verifyComplete();
 
         //Payment Repository Test
         StepVerifier.
                 create(paymentInstanceEntityMono)
                 .assertNext(paymentInstanceEntitySave -> assertNotNull(paymentInstanceEntitySave.getKey()))
                 .thenAwait()
-                .expectComplete()
-                .verify();
+                .verifyComplete();
 
-
+        //PaymentDetail Repository Test
         StepVerifier.
                 create(paymentDetailEntityMono)
                 .assertNext(paymentDetailEntitySave -> assertNotNull(paymentDetailEntitySave.getKey()))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
 
     }
 
@@ -127,25 +91,17 @@ public class RepositoryTest {
     public void 조회_테스트() {
 
         //given
-        PaymentDto paymentDto = PaymentDto.builder()
-                .cardNumber("1234567890123456")
-                .installment(4)
-                .cvc(777)
-                .tax(100)
-                .price(10000)
-                .validityRange("1125")
-                .build();
-        PaymentResponseDto paymentResponseDto = paymentWebService.paymentSave(paymentDto).block();
+        PaymentResponseDto paymentResponseDto = paymentWebService.paymentSave(PaymentDtoBuilder.build()).block();
 
-        Assertions.assertNotNull(paymentResponseDto);
+        //when
+        assert paymentResponseDto != null;
         Mono<PaymentViewEntity> paymentViewEntityMono = paymentViewRepository.findByIdentityNumberSearch(paymentResponseDto.getIdentityNumber());
 
-        //when & //then
+        //then
         StepVerifier
                 .create(paymentViewEntityMono)
                 .assertNext(paymentViewEntity -> assertNotNull(paymentViewEntity.getIdentityNumber()))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
 
     }
 

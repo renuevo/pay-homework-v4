@@ -25,16 +25,16 @@ public class PaymentDto extends PriceDto{
 
     @NotNull
     @Size(min = 10, max = 16)
-    String cardNumber;                    //카드번호
+    private String cardNumber;                    //카드번호
 
     @NotNull
     @Size(min = 4, max = 4)
-    String validityRange;            //카드 유효기간
+    private String validityRange;            //카드 유효기간
 
     @NotNull
     @Min(100)
     @Max(999)
-    Integer cvc;                        //cvc 번호
+    private Integer cvc;                        //cvc 번호
 
     @Builder
     public PaymentDto(String cardNumber, String validityRange, int cvc, int installment, int price, int tax) {

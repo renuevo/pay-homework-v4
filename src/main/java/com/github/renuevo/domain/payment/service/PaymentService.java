@@ -75,7 +75,7 @@ public class PaymentService {
      */
     @Transactional
     public Mono<PaymentInstanceEntity> paymentInstanceEntitySave(PaymentInstanceEntity paymentInstanceEntity) {
-        return paymentInstanceRepository.save(paymentInstanceEntity).subscribeOn(Schedulers.elastic());
+        return paymentInstanceRepository.save(paymentInstanceEntity);
     }
 
     /**
@@ -96,8 +96,7 @@ public class PaymentService {
                 .paymentType(paymentActionType.name())
                 .identityNumber(paymentInstanceEntity.getIdentityNumber())
                 .price(priceDto.getPrice())
-                .tax(priceDto.getTax()).build())
-                .subscribeOn(Schedulers.elastic());
+                .tax(priceDto.getTax()).build());
     }
 
 

@@ -1,9 +1,6 @@
 package com.github.renuevo.domain.payment.dao;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -19,7 +16,7 @@ import java.time.LocalDateTime;
  * </pre>
  */
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access= AccessLevel.PROTECTED)
 @Table("payment_instance")
 public class PaymentInstanceEntity {
 
