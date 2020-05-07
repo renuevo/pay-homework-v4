@@ -18,6 +18,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
+
 /**
  * <pre>
  * @className : paymentWebServiceTest
@@ -54,6 +56,7 @@ class PaymentWebServiceTest {
         paymentCancelDto1.setPrice(1000);
         paymentCancelDto2.setPrice(1000);
 
+        StepVerifier.setDefaultTimeout(Duration.ofSeconds(10));
     }
 
     @Test
@@ -64,12 +67,13 @@ class PaymentWebServiceTest {
         //다중 호출 Mono
         var PaymentZipMono = Mono.zip(
                 paymentWebService.paymentSave(PaymentDtoBuilder.build()),
+                paymentWebService.paymentSave(PaymentDtoBuilder.build()),
                 paymentWebService.paymentSave(PaymentDtoBuilder.build()))
                 .subscribeOn(Schedulers.parallel());
 
         //then
-        StepVerifier.
-                create(PaymentZipMono)
+        StepVerifier
+                .create(PaymentZipMono)
                 .verifyError(); //에러 발생여부 확인
     }
 

@@ -10,6 +10,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import static com.github.renuevo.domain.payment.common.ValidationConstant.*;
+
 /**
  * <pre>
  * @className : cardPayDto
@@ -21,19 +23,19 @@ import javax.validation.constraints.Size;
 @Setter
 @Getter
 @NoArgsConstructor
-public class PaymentDto extends PriceDto{
+public class PaymentDto extends PriceDto {
 
     @NotNull
-    @Size(min = 10, max = 16)
+    @Size(min = MIN_CARD_NUMBER_LENGTH, max = MAX_CARD_NUMBER_LENGTH)
     private String cardNumber;                    //카드번호
 
     @NotNull
-    @Size(min = 4, max = 4)
+    @Size(min = CARD_VALIDITY_RANGE_LENGTH, max = CARD_VALIDITY_RANGE_LENGTH)
     private String validityRange;            //카드 유효기간
 
     @NotNull
-    @Min(100)
-    @Max(999)
+    @Min(MIN_CVC)
+    @Max(MAX_CVC)
     private Integer cvc;                        //cvc 번호
 
     @Builder
