@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -57,12 +58,11 @@ class PaymentWebServiceTest {
 
     @Test
     @DisplayName("같은 카드 다중 결제 테스트")
-    void 다중결제_테스트() {
+    public void 다중결제_테스트() {
 
         //when
         //다중 호출 Mono
         var PaymentZipMono = Mono.zip(
-                paymentWebService.paymentSave(PaymentDtoBuilder.build()),
                 paymentWebService.paymentSave(PaymentDtoBuilder.build()),
                 paymentWebService.paymentSave(PaymentDtoBuilder.build()))
                 .subscribeOn(Schedulers.parallel());
@@ -76,7 +76,7 @@ class PaymentWebServiceTest {
 
     @Test
     @DisplayName("동시 캔슬 테스트")
-    void 동시_캔슬_테스트() {
+    public void 동시_캔슬_테스트() {
         //when
         var cancelMono = Mono.zip(
                 paymentWebService.paymentCancel(paymentCancelDto1),
@@ -92,7 +92,7 @@ class PaymentWebServiceTest {
 
     @Test
     @DisplayName("순차 캔슬 테스트")
-    void 순차_캔슬_테스트() {
+    public void 순차_캔슬_테스트() {
         //when
         var cancelMono = Mono.just(paymentWebService.paymentCancel(paymentCancelDto1))
                 .concatWith(Mono.just(paymentWebService.paymentCancel(paymentCancelDto1)));

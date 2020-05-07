@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
  * </pre>
  */
 @Getter
-@NoArgsConstructor(access= AccessLevel.PROTECTED)
+@NoArgsConstructor
 @Table("payment_detail")
 public class PaymentViewEntity {
 

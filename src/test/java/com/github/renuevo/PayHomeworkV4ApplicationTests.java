@@ -46,10 +46,9 @@ class PayHomeworkV4ApplicationTests {
         Mockito.when(securityUtils.getSaltKey()).thenReturn("ce63775ac83101f6");
     }
 
-
     @ParameterizedTest
     @CsvFileSource(resources = "/case1.csv")
-    void TEST_CASE_1(String type, int price, Integer tax, int status, int resultPrice, int resultTax) {
+    public void TEST_CASE_1(String type, int price, Integer tax, int status, int resultPrice, int resultTax) {
 
         //given
         String identityNumber = "7395144a9c0935c22caa";
@@ -88,7 +87,7 @@ class PayHomeworkV4ApplicationTests {
 
     @ParameterizedTest
     @CsvFileSource(resources = "/case2.csv")
-    void TEST_CASE_2(String type, int price, Integer tax, int status, int resultPrice, int resultTax) {
+    public void TEST_CASE_2(String type, int price, Integer tax, int status, int resultPrice, int resultTax) {
 
         //given
         String identityNumber = "7395144a9c0935c22cab";
@@ -128,7 +127,7 @@ class PayHomeworkV4ApplicationTests {
 
     @ParameterizedTest
     @CsvFileSource(resources = "/case3.csv")
-    void TEST_CASE_3(String type, int price, Integer tax, int status, int resultPrice, int resultTax) {
+    public void TEST_CASE_3(String type, int price, Integer tax, int status, int resultPrice, int resultTax) {
 
         //given
         String identityNumber = "7395144a9c0935c22cac";
