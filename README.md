@@ -21,7 +21,7 @@
 <br/>
 
 ## 개발 전략  
-###WebFlux  
+### WebFlux  
 개발은 일반적인 MVC 방법이 아닌 WebFlux 방식으로 구현하였습니다  
 WebFlux를 사용한 이유는 다음과 같습니다  
 
@@ -33,7 +33,7 @@ WebFlux를 사용한 이유는 다음과 같습니다
 
 <br/>
 
-###Error Handler  
+### Error Handler  
 Error는 전역`RestControllerAdvice`를 설정하여 한곳에서 설정 가능하도록 구현하였습니다  
 
  ![Error Handle](./assert/error-code.PNG)
@@ -50,13 +50,13 @@ Error는 전역`RestControllerAdvice`를 설정하여 한곳에서 설정 가능
 
 <br/>
 
-###카드 정보 암호화  
+### 카드 정보 암호화  
 민감한 카드정보 암호화에는 NIST(National Institute of Standards and Technology, 미국표준기술연구소)에서  
 승인한 대칭키 알고리즘인 `PBKDF2`를 사용하였습니다  
 
 <br/>
 
-###Rest Document  
+### Rest Document  
 Swagger를 사용하여 Rest Doc을 확인할 수 있도록 설정하였습니다  
 [swagger-ui.html](localhost:8080/swagger-ui.html)을 통해 접근하실 수 있습니다  
 
@@ -64,12 +64,12 @@ Swagger를 사용하여 Rest Doc을 확인할 수 있도록 설정하였습니�
 
 <br/>
 
-###Multi Thread 방어  
+### Multi Thread 방어  
 각 DB접근에 Transaction에 격리상태를`isolation = Isolation.SERIALIZABLE)`로 동시접근을 제어하였습니다
 
 <br/>
 
-###결과  
+### 결과  
 
 **결제**  
 ![payment](./assert/payment.PNG)  
