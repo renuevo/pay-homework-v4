@@ -96,7 +96,7 @@ Swagger를 사용하여 Rest Doc을 확인할 수 있도록 설정하였습니�
 ### Build 및 실행 방법
 **Build**
 ```text
-$ git clone git@github.com:cheese10yun/spring-guide.git
+$ git clone git@github.com/renuevo/pay-homework-v4.git
 $ cd pay-homework-v4
 $ ./gradlew build
 // war 파일로 생성 됩니다
